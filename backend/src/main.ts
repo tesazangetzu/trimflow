@@ -1,0 +1,48 @@
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+import { TrimflowLoggerService } from './shared/logger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DataSource } from 'typeorm';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  const logger = await app.resolve(TrimflowLoggerService);
+  app.useLogger(logger);
+
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PORT', 3000);
+  const apiPrefix = configService.get<string>('API_PREFIX', 'v1');
+  const corsOrigins = configService.get<string>('CORS_ORIGINS', '*');
+
+  app.enableCors({
+    origin: corsOrigins === '*' ? true : corsOrigins.split(',').map((o) => o.trim()),
+    credentials: true,
+  });
+
+  app.setGlobalPrefix(apiPrefix);
+
+  // Migraciones automáticas
+  try {
+    const dataSource = app.get(DataSource);
+    await dataSource.runMigrations();
+    logger.log('✅ Migraciones ejecutadas correctamente');
+  } catch (error) {
+    logger.warn('⚠️ No se pudieron ejecutar las migraciones: ' + (error as Error).message);
+  }
+
+  // Swagger
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('TrimFlow API')
+    .setDescription('Multi-tenant SaaS para barberías')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, document);
+
+  await app.listen(port);
+  logger.log(`🚀 TrimFlow Backend running on http://localhost:${port}/${apiPrefix}`);
+  logger.log(`📖 Swagger docs at http://localhost:${port}/docs`);
+}
+bootstrap();

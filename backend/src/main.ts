@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { TrimflowLoggerService } from './shared/logger';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
+import { runSeed } from './database/seeds/demo-seed';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,8 +28,18 @@ async function bootstrap() {
     const dataSource = app.get(DataSource);
     await dataSource.runMigrations();
     logger.log('✅ Migraciones ejecutadas correctamente');
+
+    // Seed automático: solo si la tabla users está vacía
+    const userCount = await dataSource.query('SELECT COUNT(*)::int AS count FROM users');
+    if (userCount[0]?.count === 0) {
+      logger.log('🌱 Base de datos vacía — ejecutando seed de datos demo...');
+      await runSeed(dataSource);
+      logger.log('✅ Seed de datos demo completado');
+    } else {
+      logger.log('ℹ️ Base de datos ya tiene datos — seed omitido');
+    }
   } catch (error) {
-    logger.warn('⚠️ No se pudieron ejecutar las migraciones: ' + (error as Error).message);
+    logger.warn('⚠️ No se pudieron ejecutar migraciones/seed: ' + (error as Error).message);
   }
 
   // Swagger

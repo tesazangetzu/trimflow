@@ -4,15 +4,12 @@ import * as bcrypt from 'bcrypt';
 
 config();
 
-async function seed() {
-  const dataSource = new DataSource({
-    type: 'postgres',
-    url: process.env.DATABASE_URL,
-    entities: ['src/**/*.entity.ts'],
-    logging: false,
-  });
-
-  await dataSource.initialize();
+/**
+ * Ejecuta el seed de datos demo usando un DataSource ya inicializado.
+ * Es idempotente (usa ON CONFLICT DO NOTHING), por lo que puede ejecutarse
+ * varias veces sin duplicar datos.
+ */
+export async function runSeed(dataSource: DataSource) {
   const queryRunner = dataSource.createQueryRunner();
 
   console.log('🌱 Seeding demo data...');
@@ -140,11 +137,30 @@ async function seed() {
     throw error;
   } finally {
     await queryRunner.release();
+  }
+}
+
+// Ejecución directa como script CLI (npm run seed:run)
+async function seed() {
+  const dataSource = new DataSource({
+    type: 'postgres',
+    url: process.env.DATABASE_URL,
+    entities: ['src/**/*.entity.ts'],
+    logging: false,
+  });
+
+  await dataSource.initialize();
+  try {
+    await runSeed(dataSource);
+  } finally {
     await dataSource.destroy();
   }
 }
 
-seed().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Solo se ejecuta como script directo (no cuando se importa desde main.ts)
+if (require.main === module) {
+  seed().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { join } from 'path';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -51,6 +52,9 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
         url: configService.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: false,
+        migrations: [join(__dirname, 'database/migrations/*{.ts,.js}')],
+        migrationsRun: true,
+        migrationsTableName: 'typeorm_migrations',
         logging: configService.get<string>('NODE_ENV') === 'development',
       }),
     }),

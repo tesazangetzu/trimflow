@@ -1,16 +1,16 @@
 # Render Blueprint — TrimFlow Backend
-# Este archivo define el servicio backend para Render.
+# Build nativo de Node (más robusto para monorepos que Docker en Render)
 # La base de datos (Neon) y el frontend (Vercel) se configuran por separado.
 
 services:
   - type: web
     name: trimflow-backend
-    runtime: docker
+    runtime: node
     repo: https://github.com/tesazangetzu/trimflow
     rootDir: backend
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
     plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: node dist/main
     envVars:
       - key: NODE_ENV
         value: production

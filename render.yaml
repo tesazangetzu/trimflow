@@ -9,9 +9,11 @@ services:
     repo: https://github.com/tesazangetzu/trimflow
     rootDir: backend
     plan: free
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: node dist/main
     envVars:
+      - key: NODE_VERSION
+        value: "20"
       - key: NODE_ENV
         value: production
       - key: PORT

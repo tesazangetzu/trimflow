@@ -44,6 +44,22 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 - [x] Barber puede ver su agenda y marcar citas como completadas.
 - [x] Barber puede bloquear slots de disponibilidad.
 
+### Break del barbero (ver ADR-011)
+
+- [ ] Break de un solo bloque por día sobre el horario del barbero (`Schedule.breakStartTime`/`breakEndTime`).
+- [ ] El break se respeta en el cálculo de disponibilidad (público y admin).
+
+### Landing pública de reservas (ver ADR-012)
+
+- [ ] Self-service por slug: `GET /v1/public/:slug` (metadatos de la barbería).
+- [ ] Cálculo de disponibilidad pública: `GET /v1/public/:slug/availability`.
+- [ ] Lookup de cliente por email: `POST /v1/public/:slug/customers/lookup` (autocompletar).
+- [ ] Creación de reserva sin registro: `POST /v1/public/:slug/appointments`.
+- [ ] Flujo frontend en 4 pasos: servicio → barbero → fecha/hora → datos del cliente → confirmación.
+- [ ] Sólo se muestran horarios disponibles; los pasados aparecen bloqueados (no seleccionables).
+- [ ] Email obligatorio del cliente (confirmación por email; sin WhatsApp/SMS en MVP).
+- [ ] Slug auto-generado del nombre (slugify) con sufijo único en colisión y campo editable opcional (requisito admin).
+
 ### Notificaciones (asíncronas)
 
 - [x] Confirmación por email al crear cita.
@@ -102,8 +118,8 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 
 ### v2.2 — Self-service para clientes
 
-- [ ] Portal web público para agendar citas.
-- [ ] Cancelación/modificación por parte del cliente.
+> Nota: el **portal público para agendar citas** se adelanta al MVP (landing pública, ver ADR-012). Lo que sigue **excluido** aquí:
+- [ ] Cancelación/modificación de la cita por parte del cliente.
 - [ ] Recordatorios configurables por el cliente.
 
 ### v3.0 — Funcionalidades avanzadas

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { useToastManager } from "@/components/ui/toast"
 import * as tenantsService from "@/services/tenants.service"
+import { slugify } from "@/lib/slugify"
 import type { Tenant } from "@/types/tenant"
 
 interface TenantFormDialogProps {
@@ -44,12 +45,22 @@ function TenantFormContent({
   const [email, setEmail] = useState(tenant?.email ?? "")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [slugEdited, setSlugEdited] = useState(false)
 
   const isCreate = mode === "create"
   const prefix = isCreate ? "create" : "edit"
 
+  const handleNameChange = (value: string) => {
+    setName(value)
+    // Auto-genera el slug desde el nombre solo si el usuario aún no lo editó manualmente.
+    if (isCreate && !slugEdited) {
+      setSlug(slugify(value))
+    }
+  }
+
   const handleSlugChange = (value: string) => {
     setSlug(value)
+    setSlugEdited(true)
     setError(null)
   }
 
@@ -102,7 +113,7 @@ function TenantFormContent({
         <Input
           id={`${prefix}-name`}
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => handleNameChange(e.target.value)}
           required
         />
       </div>
@@ -116,7 +127,9 @@ function TenantFormContent({
           aria-invalid={error ? true : undefined}
         />
         <p className="text-xs text-muted-foreground">
-          Minúsculas, sin espacios; se usa en la URL del tenant.
+          {isCreate
+            ? "Se genera automáticamente desde el nombre. Puedes editarlo; se usa en la URL pública."
+            : "Minúsculas, sin espacios; se usa en la URL del tenant."}
         </p>
       </div>
       <div className="space-y-2">

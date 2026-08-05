@@ -17,4 +17,6 @@ export interface IScheduleService {
   updateBlock(id: string, dto: UpdateBlockDto): Promise<AvailabilityBlock>;
   removeBlock(id: string): Promise<void>;
   isBarberAvailable(barberId: string, start: Date, end: Date): Promise<boolean>;
+  findActiveSchedule(barberId: string, dayOfWeek: number): Promise<Schedule | null>;
+  findBlocksByBarberAndRange(barberId: string, start: Date, end: Date): Promise<AvailabilityBlock[]>;
 }

@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
@@ -22,6 +22,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AuthModule } from './modules/auth/auth.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
+import { PublicModule } from './modules/public/public.module';
 
 @Module({
   imports: [
@@ -77,8 +78,18 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
     AuthModule,
     SettingsModule,
     ScheduleModule,
+    PublicModule,
   ],
   providers: [
+    {
+      provide: APP_PIPE,
+      useFactory: () =>
+        new ValidationPipe({
+          transform: true,
+          whitelist: true,
+          forbidNonWhitelisted: false,
+        }),
+    },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

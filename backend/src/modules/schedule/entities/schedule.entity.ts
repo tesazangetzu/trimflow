@@ -22,6 +22,12 @@ export class Schedule {
   @Column({ type: 'time without time zone' })
   endTime: string;
 
+  @Column({ type: 'time without time zone', nullable: true })
+  breakStartTime?: string;
+
+  @Column({ type: 'time without time zone', nullable: true })
+  breakEndTime?: string;
+
   @Column({ default: true })
   isActive: boolean;
 

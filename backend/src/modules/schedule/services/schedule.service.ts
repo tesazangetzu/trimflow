@@ -7,7 +7,7 @@ import { CreateScheduleDto } from '../dto/create-schedule.dto';
 import { UpdateScheduleDto } from '../dto/update-schedule.dto';
 import { CreateBlockDto } from '../dto/create-block.dto';
 import { UpdateBlockDto } from '../dto/update-block.dto';
-import { EntityNotFoundException } from '../../../shared/exceptions';
+import { EntityNotFoundException, BusinessRuleViolation } from '../../../shared/exceptions';
 import { TrimflowLoggerService } from '../../../shared/logger';
 import { IScheduleService } from '../interfaces/schedule-service.interface';
 
@@ -23,7 +23,29 @@ export class ScheduleService implements IScheduleService {
     this.logger.setContext('ScheduleService');
   }
 
+  private validateBreak(
+    startTime: string,
+    endTime: string,
+    breakStartTime?: string,
+    breakEndTime?: string,
+  ): void {
+    if (breakStartTime === undefined && breakEndTime === undefined) return;
+
+    if (!breakStartTime || !breakEndTime) {
+      throw new BusinessRuleViolation('Break must define both breakStartTime and breakEndTime (or none)');
+    }
+
+    if (breakStartTime >= breakEndTime) {
+      throw new BusinessRuleViolation('breakStartTime must be earlier than breakEndTime');
+    }
+
+    if (breakStartTime < startTime || breakEndTime > endTime) {
+      throw new BusinessRuleViolation('Break must be fully contained within schedule startTime/endTime');
+    }
+  }
+
   async create(dto: CreateScheduleDto): Promise<Schedule> {
+    this.validateBreak(dto.startTime, dto.endTime, dto.breakStartTime, dto.breakEndTime);
     const schedule = this.scheduleRepository.create(dto);
     const saved = await this.scheduleRepository.save(schedule);
     this.logger.log(`Schedule created: ${saved.id} for barber ${dto.barberId}`);
@@ -44,6 +66,13 @@ export class ScheduleService implements IScheduleService {
 
   async update(id: string, dto: UpdateScheduleDto): Promise<Schedule> {
     const schedule = await this.findOne(id);
+    const merged = { ...schedule, ...dto };
+    this.validateBreak(
+      merged.startTime,
+      merged.endTime,
+      dto.breakStartTime !== undefined ? dto.breakStartTime : (schedule.breakStartTime as string | undefined),
+      dto.breakEndTime !== undefined ? dto.breakEndTime : (schedule.breakEndTime as string | undefined),
+    );
     Object.assign(schedule, dto);
     const updated = await this.scheduleRepository.save(schedule);
     this.logger.log(`Schedule updated: ${id}`);
@@ -112,6 +141,19 @@ export class ScheduleService implements IScheduleService {
 
     if (start < scheduleStart || end > scheduleEnd) return false;
 
+    if (schedule.breakStartTime && schedule.breakEndTime) {
+      const [breakStartHours, breakStartMinutes] = schedule.breakStartTime.split(':').map(Number);
+      const [breakEndHours, breakEndMinutes] = schedule.breakEndTime.split(':').map(Number);
+
+      const breakStart = new Date(start);
+      breakStart.setHours(breakStartHours, breakStartMinutes, 0, 0);
+
+      const breakEnd = new Date(start);
+      breakEnd.setHours(breakEndHours, breakEndMinutes, 0, 0);
+
+      if (start < breakEnd && end > breakStart) return false;
+    }
+
     const blocks = await this.blockRepository.find({
       where: {
         barberId,
@@ -121,5 +163,21 @@ export class ScheduleService implements IScheduleService {
     });
 
     return blocks.length === 0;
+  }
+
+  async findActiveSchedule(barberId: string, dayOfWeek: number): Promise<Schedule | null> {
+    return this.scheduleRepository.findOne({
+      where: { barberId, dayOfWeek, isActive: true },
+    });
+  }
+
+  async findBlocksByBarberAndRange(barberId: string, start: Date, end: Date): Promise<AvailabilityBlock[]> {
+    return this.blockRepository.find({
+      where: {
+        barberId,
+        startDateTime: LessThan(end),
+        endDateTime: MoreThan(start),
+      },
+    });
   }
 }

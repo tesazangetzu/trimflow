@@ -9,9 +9,19 @@ const ROLES = {
 
 type Role = keyof typeof ROLES
 
+// Raíces de dashboard reservadas (nunca son slugs públicos de barbería)
+const RESERVED_ROOTS = new Set(["login", "register", "admin", "barber", "super-admin"])
+
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value
   const { pathname } = request.nextUrl
+
+  // Rutas públicas de la landing por slug (un único segmento de nivel superior
+  // que no colisiona con login/register ni con las raíces de los dashboards).
+  const segments = pathname.split("/").filter(Boolean)
+  if (segments.length === 1 && !RESERVED_ROOTS.has(segments[0])) {
+    return NextResponse.next()
+  }
 
   const publicPaths = ["/login", "/register"]
   if (publicPaths.includes(pathname)) {

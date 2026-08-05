@@ -22,6 +22,18 @@ export class CreateScheduleDto {
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'endTime must be in HH:mm format' })
   endTime: string;
 
+  @ApiPropertyOptional({ example: '12:00', description: 'Inicio del break diario (HH:mm)' })
+  @IsOptional()
+  @IsString()
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'breakStartTime must be in HH:mm format' })
+  breakStartTime?: string;
+
+  @ApiPropertyOptional({ example: '14:00', description: 'Fin del break diario (HH:mm)' })
+  @IsOptional()
+  @IsString()
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'breakEndTime must be in HH:mm format' })
+  breakEndTime?: string;
+
   @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()

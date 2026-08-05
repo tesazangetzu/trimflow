@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ScheduleResponseDto {
   @ApiProperty()
@@ -15,6 +15,12 @@ export class ScheduleResponseDto {
 
   @ApiProperty()
   endTime: string;
+
+  @ApiPropertyOptional()
+  breakStartTime?: string;
+
+  @ApiPropertyOptional()
+  breakEndTime?: string;
 
   @ApiProperty()
   isActive: boolean;

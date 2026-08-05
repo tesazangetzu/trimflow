@@ -111,6 +111,24 @@ src/
 │   │   ├── guards/                # Guards específicos de auth
 │   │   └── auth.module.ts
 │   │
+│   ├── schedule/                   # Horarios de barberos + bloques de disponibilidad
+│   │   ├── __tests__/
+│   │   ├── entities/               # Schedule, AvailabilityBlock (ver ADR-011: break en Schedule)
+│   │   ├── services/
+│   │   ├── controllers/
+│   │   ├── dto/
+│   │   ├── interfaces/
+│   │   └── schedule.module.ts
+│   │
+│   ├── public/                     # Landing pública de reservas — self-service SIN JWT
+│   │   │                           #   (ver ADR-012: /v1/public/:slug + cálculos de disponibilidad)
+│   │   ├── __tests__/
+│   │   ├── services/               # Consulta pública de barbería, disponibilidad, creación de reservas
+│   │   ├── controllers/            # /v1/public/:slug/... (exento de guards JWT)
+│   │   ├── dto/
+│   │   ├── interfaces/
+│   │   └── public.module.ts
+│   │
 │   └── settings/                   # Configuración del negocio
 │       ├── __tests__/
 │       ├── entities/
@@ -135,6 +153,7 @@ tenants ──→ branches ──→ barbers ──→ appointments
 auth ──→ shared/
 notifications ──→ shared/
 settings ──→ branches
+public ──→ tenants (slug) ──→ branches ──→ barbers / services / schedule / customers / appointments
 ```
 
 ### Reglas de dependencia
@@ -143,6 +162,29 @@ settings ──→ branches
 2. **Nunca** importar repositorios de otro módulo directamente.
 3. **Siempre** publicar una interfaz si otro módulo necesita acceder a funcionalidad.
 4. **Jamás** un módulo de dominio debe depender de un módulo de infraestructura (ej. notifications).
+
+## Módulo público de reservas (`public`)
+
+El módulo `public` expone la **landing pública por barbería** sin autenticación (ver **ADR-012**). No usa guards JWT: resuelve la barbería únicamente por el **slug** de la URL y opera de forma acotada a esa branch.
+
+### Contratos HTTP (`/v1/public/:slug`)
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/v1/public/:slug` | Metadatos públicos de la barbería (nombre, branch, servicios, barberos). |
+| GET | `/v1/public/:slug/availability` | Cálculo de disponibilidad real (query: serviceId, barberId?, fecha). |
+| POST | `/v1/public/:slug/customers/lookup` | Autocompleta un `Customer` existente de la branch por email (o 404). |
+| POST | `/v1/public/:slug/appointments` | Crea la reserva (upsert de Customer + creación de Appointment). |
+
+### Flujo de reserva (frontend Next.js)
+
+`servicio → barbero → fecha/hora → datos del cliente → confirmación`.
+
+En el paso de datos, al escribir el email se hace el **lookup** público para autocompletar; si no existe, el backend crea el `Customer` (misma branch) al hacer POST de la cita. Email OBLIGATORIO (confirmación por email; sin WhatsApp/SMS en MVP).
+
+### Cálculo de disponibilidad
+
+Los slots válidos resultan de la intersección de: horario de tienda (`Branch.openingTime/closingTime`), horario del barbero (`Schedule.startTime/endTime` si `isActive`), **break del barbero** (`Schedule.breakStartTime/breakEndTime`, ver **ADR-011**), bloqueos puntuales (`AvailabilityBlock`) y citas existentes (`Appointment`). Se descarta cualquier slot que no quepa completo por `Service.durationMinutes`. Los slots **pasados** se muestran pero **bloqueados** (no seleccionables).
 
 ## Clean Architecture dentro de cada módulo
 

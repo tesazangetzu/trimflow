@@ -1,0 +1,227 @@
+"use client"
+
+import { useMemo, useState } from "react"
+import { usePublicData } from "@/hooks/booking/use-public-data"
+import { useBooking, type WizardService } from "@/hooks/booking/use-booking"
+import { useAvailability } from "@/hooks/booking/use-availability"
+import { SelectService } from "@/components/booking/steps/SelectService"
+import { SelectBarber } from "@/components/booking/steps/SelectBarber"
+import { SelectDate } from "@/components/booking/steps/SelectDate"
+import { Checkout } from "@/components/booking/steps/Checkout"
+import { Success } from "@/components/booking/steps/Success"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import type { PublicBranch } from "@/types/public"
+
+const STEP_LABELS: Record<string, string> = {
+  service: "Servicio",
+  barber: "Barbero",
+  date: "Fecha y hora",
+  checkout: "Tus datos",
+  success: "Confirmación",
+}
+
+export function BookingWizard({ slug }: { slug: string }) {
+  const { shop, loading, notFound, error, reload } = usePublicData(slug)
+  const [activeBranchId, setActiveBranchId] = useState<string | null>(null)
+
+  const booking = useBooking(slug)
+
+  const activeBranch: PublicBranch | null = useMemo(() => {
+    if (!shop || shop.branches.length === 0) return null
+    const found = shop.branches.find((b) => b.id === activeBranchId)
+    return found ?? shop.branches[0]
+  }, [shop, activeBranchId])
+
+  const services: WizardService[] = useMemo(() => {
+    if (!activeBranch) return []
+    return activeBranch.services.map((s) => ({
+      id: s.id,
+      name: s.name,
+      description: s.description,
+      price: s.price,
+      durationMinutes: s.durationMinutes,
+      branchId: activeBranch.id,
+    }))
+  }, [activeBranch])
+
+  const barbers = activeBranch?.barbers ?? []
+
+  const availability = useAvailability(
+    slug,
+    booking.selectedService?.id ?? null,
+    booking.selectedBarber?.id ?? null,
+    booking.selectedDate,
+  )
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-xl animate-pulse space-y-4 py-10">
+        <div className="h-8 w-2/3 rounded bg-muted" />
+        <div className="h-40 rounded-2xl bg-muted" />
+      </div>
+    )
+  }
+
+  if (notFound) {
+    return (
+      <div className="mx-auto max-w-xl py-16 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-3xl">
+          💈
+        </div>
+        <h1 className="text-xl font-semibold text-foreground">Barbería no encontrada</h1>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+          No encontramos una barbería con esa dirección. Verifica el enlace o vuelve a intentarlo.
+        </p>
+        <a href="/login" className="mt-6 inline-block">
+          <Button variant="outline">Ir al inicio</Button>
+        </a>
+      </div>
+    )
+  }
+
+  if (error || !shop) {
+    return (
+      <div className="mx-auto max-w-xl py-16 text-center">
+        <h1 className="text-xl font-semibold text-foreground">Algo salió mal</h1>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+          {error ?? "No se pudo cargar la barbería."}
+        </p>
+        <Button className="mt-6" onClick={reload}>
+          Reintentar
+        </Button>
+      </div>
+    )
+  }
+
+  const stepIndex = ["service", "barber", "date", "checkout", "success"].indexOf(booking.step)
+
+  return (
+    <div className="mx-auto w-full max-w-xl px-4 py-8">
+      <header className="mb-6 text-center">
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-3xl ring-1 ring-primary/30">
+          💈
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">{shop.name}</h1>
+        {activeBranch?.address && (
+          <p className="mt-1 text-sm text-muted-foreground">{activeBranch.address}</p>
+        )}
+      </header>
+
+      {shop.branches.length > 1 && (
+        <div className="mb-6 flex flex-wrap justify-center gap-2">
+          {shop.branches.map((branch) => (
+            <button
+              key={branch.id}
+              type="button"
+              onClick={() => setActiveBranchId(branch.id)}
+              className={cn(
+                "rounded-full border px-4 py-1.5 text-sm font-medium transition-all",
+                activeBranch?.id === branch.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40",
+              )}
+            >
+              {branch.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {booking.step !== "success" && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            {STEP_LABELS[booking.step] && (
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {STEP_LABELS[booking.step]}
+              </span>
+            )}
+            <span className="text-xs text-muted-foreground">
+              Paso {stepIndex + 1} de 5
+            </span>
+          </div>
+          <div className="mt-2 flex gap-1.5">
+            {["service", "barber", "date", "checkout", "success"].map((s, i) => (
+              <div
+                key={s}
+                className={cn(
+                  "h-1.5 flex-1 rounded-full transition-colors",
+                  i <= stepIndex ? "bg-primary" : "bg-muted",
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        {booking.step === "service" && (
+          <SelectService
+            services={services}
+            selectedService={booking.selectedService}
+            canProceed={booking.canProceed}
+            onSelect={booking.handleSelectService}
+            onNext={booking.nextStep}
+          />
+        )}
+
+        {booking.step === "barber" && (
+          <SelectBarber
+            barbers={barbers}
+            selectedBarber={booking.selectedBarber}
+            canProceed={booking.canProceed}
+            onSelect={booking.handleSelectBarber}
+            onPrev={booking.prevStep}
+            onNext={booking.nextStep}
+          />
+        )}
+
+        {booking.step === "date" && (
+          <SelectDate
+            selectedDate={booking.selectedDate}
+            selectedSlot={booking.selectedSlot}
+            slots={availability.slots}
+            slotsLoading={availability.loading}
+            slotsError={availability.error}
+            canProceed={booking.canProceed}
+            onSelectDate={booking.handleSelectDate}
+            onSelectSlot={booking.handleSelectSlot}
+            onPrev={booking.prevStep}
+            onNext={booking.nextStep}
+          />
+        )}
+
+        {booking.step === "checkout" && (
+          <Checkout
+            selectedService={booking.selectedService!}
+            selectedBarber={booking.selectedBarber!}
+            selectedDate={booking.selectedDate}
+            selectedSlot={booking.selectedSlot}
+            name={booking.name}
+            phone={booking.phone}
+            email={booking.email}
+            lookupLoading={booking.lookupLoading}
+            saveEnabled={booking.canProceed}
+            submitting={booking.submitting}
+            error={booking.error}
+            onNameChange={booking.setName}
+            onPhoneChange={booking.setPhone}
+            onEmailChange={booking.setEmail}
+            onPrev={booking.prevStep}
+            onSubmit={booking.handleSubmit}
+          />
+        )}
+
+        {booking.step === "success" && booking.appointment && (
+          <Success
+            appointment={booking.appointment}
+            shopName={shop.name}
+            branch={activeBranch}
+            selectedDate={booking.selectedDate}
+            selectedSlot={booking.selectedSlot}
+          />
+        )}
+      </div>
+    </div>
+  )
+}

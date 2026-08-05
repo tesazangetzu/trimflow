@@ -65,32 +65,46 @@ describe('TenantService', () => {
   describe('create', () => {
     const createDto: CreateTenantDto = {
       name: 'Barbería El Clásico',
-      slug: 'barberia-el-clasico',
       email: 'contacto@elclasico.com',
     };
 
-    it('should create a tenant when slug is unique', async () => {
+    it('should create a tenant deriving slug from name when unique', async () => {
       tenantRepository.findOne.mockResolvedValue(null);
-      tenantRepository.create.mockReturnValue(mockTenant);
-      tenantRepository.save.mockResolvedValue(mockTenant);
+      tenantRepository.create.mockImplementation((dto) => ({ ...dto, id: 'tenant-uuid-1' }) as Tenant);
+      tenantRepository.save.mockImplementation((t) => Promise.resolve({ ...mockTenant, ...(t as any) } as Tenant));
 
       const result = await service.create(createDto);
 
-      expect(tenantRepository.findOne).toHaveBeenCalledWith({
-        where: { slug: createDto.slug },
-        withDeleted: true,
-      });
-      expect(tenantRepository.create).toHaveBeenCalledWith(createDto);
+      expect(tenantRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ name: createDto.name, slug: 'barberia-el-clasico' }),
+      );
       expect(tenantRepository.save).toHaveBeenCalled();
-      expect(result).toEqual(mockTenant);
+      expect(result.slug).toBe('barberia-el-clasico');
       expect(mockLogger.log).toHaveBeenCalled();
     });
 
-    it('should throw BusinessRuleViolation when slug already exists', async () => {
-      tenantRepository.findOne.mockResolvedValue(mockTenant);
+    it('should append a numeric suffix when the derived slug collides', async () => {
+      tenantRepository.findOne
+        .mockResolvedValueOnce(mockTenant)
+        .mockResolvedValue(null);
+      tenantRepository.create.mockImplementation((dto) => ({ ...dto, id: 'tenant-uuid-2' }) as Tenant);
+      tenantRepository.save.mockImplementation((t) => Promise.resolve({ ...mockTenant, ...(t as any) } as Tenant));
 
-      await expect(service.create(createDto)).rejects.toThrow(BusinessRuleViolation);
-      expect(tenantRepository.create).not.toHaveBeenCalled();
+      const result = await service.create(createDto);
+
+      expect(result.slug).toBe('barberia-el-clasico-2');
+    });
+
+    it('should respect an explicit slug when unique', async () => {
+      const explicit = { ...createDto, slug: 'mi-slug' };
+      tenantRepository.findOne.mockResolvedValue(null);
+      tenantRepository.create.mockImplementation((dto) => ({ ...dto, id: 'tenant-uuid-3' }) as Tenant);
+      tenantRepository.save.mockImplementation((t) => Promise.resolve({ ...mockTenant, ...(t as any) } as Tenant));
+
+      const result = await service.create(explicit);
+
+      expect(tenantRepository.create).toHaveBeenCalledWith(expect.objectContaining({ slug: 'mi-slug' }));
+      expect(result.slug).toBe('mi-slug');
     });
   });
 

@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsObject, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsObject, MinLength, MaxLength, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTenantDto {
@@ -8,11 +8,16 @@ export class CreateTenantDto {
   @MaxLength(255)
   name: string;
 
-  @ApiProperty({ example: 'barberia-el-clasico', description: 'Slug único del tenant' })
+  @ApiPropertyOptional({
+    example: 'barberia-el-clasico',
+    description: 'Slug único del tenant. Si no se envía, se auto-genera desde el nombre.',
+  })
+  @IsOptional()
   @IsString()
   @MinLength(2)
   @MaxLength(255)
-  slug: string;
+  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, { message: 'slug must be lowercase, alphanumeric, hyphen-separated' })
+  slug?: string;
 
   @ApiPropertyOptional({ example: 'contacto@barberia.com', description: 'Email de contacto' })
   @IsOptional()

@@ -46,6 +46,10 @@ export class CustomerService implements ICustomerService {
     return this.customerRepository.findOne({ where: { email } });
   }
 
+  async findByEmailAndBranch(email: string, branchId: string): Promise<Customer | null> {
+    return this.customerRepository.findOne({ where: { email, branchId } });
+  }
+
   async update(id: string, updateCustomerDto: UpdateCustomerDto): Promise<Customer> {
     const customer = await this.findOne(id);
     Object.assign(customer, updateCustomerDto);

@@ -7,6 +7,7 @@ import { UpdateTenantDto } from '../dto/update-tenant.dto';
 import { ITenantService } from '../interfaces/tenants-service.interface';
 import { EntityNotFoundException, BusinessRuleViolation } from '../../../shared/exceptions';
 import { TrimflowLoggerService } from '../../../shared/logger';
+import { slugify } from '../../../shared/utils/slugify';
 
 @Injectable()
 export class TenantService implements ITenantService {
@@ -18,15 +19,39 @@ export class TenantService implements ITenantService {
     this.logger.setContext('TenantService');
   }
 
-  async create(createTenantDto: CreateTenantDto): Promise<Tenant> {
+  private async isSlugTaken(slug: string, excludeId?: string): Promise<boolean> {
     const existing = await this.tenantRepository.findOne({
-      where: { slug: createTenantDto.slug },
+      where: { slug },
       withDeleted: true,
     });
-    if (existing) {
-      throw new BusinessRuleViolation(`Slug "${createTenantDto.slug}" already exists`);
+    if (!existing) return false;
+    if (excludeId && existing.id === excludeId) return false;
+    return true;
+  }
+
+  private async resolveUniqueSlug(base: string, excludeId?: string): Promise<string> {
+    const normalized = slugify(base) || 'tenant';
+    if (!(await this.isSlugTaken(normalized, excludeId))) return normalized;
+
+    let suffix = 2;
+    for (;;) {
+      const candidate = `${normalized}-${suffix}`;
+      if (!(await this.isSlugTaken(candidate, excludeId))) return candidate;
+      suffix += 1;
     }
-    const tenant = this.tenantRepository.create(createTenantDto);
+  }
+
+  async create(createTenantDto: CreateTenantDto): Promise<Tenant> {
+    const requested = createTenantDto.slug
+      ? slugify(createTenantDto.slug)
+      : slugify(createTenantDto.name);
+    const finalSlug = await this.resolveUniqueSlug(requested);
+
+    if (createTenantDto.slug && finalSlug !== requested) {
+      this.logger.log(`Slug "${requested}" taken — using "${finalSlug}"`);
+    }
+
+    const tenant = this.tenantRepository.create({ ...createTenantDto, slug: finalSlug });
     const saved = await this.tenantRepository.save(tenant);
     this.logger.log(`Tenant created: ${saved.id} (${saved.slug})`);
     return saved;
@@ -48,9 +73,22 @@ export class TenantService implements ITenantService {
     return this.findOne(id);
   }
 
+  async findBySlug(slug: string): Promise<Tenant | null> {
+    return this.tenantRepository.findOne({ where: { slug } });
+  }
+
   async update(id: string, updateTenantDto: UpdateTenantDto): Promise<Tenant> {
     const tenant = await this.findOne(id);
-    Object.assign(tenant, updateTenantDto);
+
+    if (updateTenantDto.slug !== undefined) {
+      const desired = slugify(updateTenantDto.slug);
+      if (desired !== tenant.slug && (await this.isSlugTaken(desired, id))) {
+        throw new BusinessRuleViolation(`Slug "${desired}" already exists`);
+      }
+      tenant.slug = desired;
+    }
+
+    Object.assign(tenant, updateTenantDto, { slug: tenant.slug });
     const updated = await this.tenantRepository.save(tenant);
     this.logger.log(`Tenant updated: ${id}`);
     return updated;

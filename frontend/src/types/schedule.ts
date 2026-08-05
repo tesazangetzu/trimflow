@@ -4,6 +4,8 @@ export interface Schedule {
   dayOfWeek: number
   startTime: string
   endTime: string
+  breakStartTime?: string | null
+  breakEndTime?: string | null
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -15,6 +17,8 @@ export interface CreateScheduleDto {
   dayOfWeek: number
   startTime: string
   endTime: string
+  breakStartTime?: string | null
+  breakEndTime?: string | null
   isActive?: boolean
 }
 
@@ -22,6 +26,8 @@ export interface UpdateScheduleDto {
   dayOfWeek?: number
   startTime?: string
   endTime?: string
+  breakStartTime?: string | null
+  breakEndTime?: string | null
   isActive?: boolean
 }
 

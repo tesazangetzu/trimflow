@@ -26,20 +26,22 @@ export class ScheduleService implements IScheduleService {
   private validateBreak(
     startTime: string,
     endTime: string,
-    breakStartTime?: string,
-    breakEndTime?: string,
+    breakStartTime?: string | null,
+    breakEndTime?: string | null,
   ): void {
-    if (breakStartTime === undefined && breakEndTime === undefined) return;
+    const bs = breakStartTime ?? undefined;
+    const be = breakEndTime ?? undefined;
+    if (bs === undefined && be === undefined) return;
 
-    if (!breakStartTime || !breakEndTime) {
+    if (!bs || !be) {
       throw new BusinessRuleViolation('Break must define both breakStartTime and breakEndTime (or none)');
     }
 
-    if (breakStartTime >= breakEndTime) {
+    if (bs >= be) {
       throw new BusinessRuleViolation('breakStartTime must be earlier than breakEndTime');
     }
 
-    if (breakStartTime < startTime || breakEndTime > endTime) {
+    if (bs < startTime || be > endTime) {
       throw new BusinessRuleViolation('Break must be fully contained within schedule startTime/endTime');
     }
   }
@@ -70,8 +72,8 @@ export class ScheduleService implements IScheduleService {
     this.validateBreak(
       merged.startTime,
       merged.endTime,
-      dto.breakStartTime !== undefined ? dto.breakStartTime : (schedule.breakStartTime as string | undefined),
-      dto.breakEndTime !== undefined ? dto.breakEndTime : (schedule.breakEndTime as string | undefined),
+      dto.breakStartTime !== undefined ? dto.breakStartTime : (schedule.breakStartTime as string | null | undefined),
+      dto.breakEndTime !== undefined ? dto.breakEndTime : (schedule.breakEndTime as string | null | undefined),
     );
     Object.assign(schedule, dto);
     const updated = await this.scheduleRepository.save(schedule);

@@ -33,14 +33,14 @@ export function KpiCard({
 
   return (
     <Card className={cn("rounded-xl border bg-card", className)}>
-      <CardContent className="flex flex-col gap-3 p-4">
+      <CardContent className="flex h-full flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-2">
           <span className="text-[13px] font-medium text-muted-foreground">{label}</span>
           {icon && <div className="flex size-8 items-center justify-center rounded-lg bg-muted">{icon}</div>}
         </div>
 
-        <div className="flex items-end justify-between gap-3">
-          <div className="min-w-0">
+        <div className="flex flex-1 items-end justify-between gap-3">
+          <div className="min-w-0 self-start">
             <p className="text-2xl font-semibold tracking-tight text-foreground">{value}</p>
             {trend !== undefined && (
               <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
@@ -58,7 +58,7 @@ export function KpiCard({
             )}
           </div>
           {data.length > 1 && (
-            <div className="h-12 w-28 shrink-0">
+            <div className="h-12 w-28 shrink-0 self-end">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
                   <defs>

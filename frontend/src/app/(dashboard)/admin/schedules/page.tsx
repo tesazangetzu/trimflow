@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { Clock, CalendarDays, AlertCircle, Pencil, Plus, Check, X, Trash2, User, Users } from "lucide-react"
+import { Clock, CalendarDays, AlertCircle, Pencil, Plus, Check, X, Trash2, User, Users, Coffee } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -86,6 +86,8 @@ export default function AdminSchedulesPage() {
   const [formDayOfWeek, setFormDayOfWeek] = useState(1)
   const [formStartTime, setFormStartTime] = useState("09:00")
   const [formEndTime, setFormEndTime] = useState("18:00")
+  const [formBreakStartTime, setFormBreakStartTime] = useState("")
+  const [formBreakEndTime, setFormBreakEndTime] = useState("")
   const [formIsActive, setFormIsActive] = useState(true)
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null)
   const [formSubmitting, setFormSubmitting] = useState(false)
@@ -116,6 +118,8 @@ export default function AdminSchedulesPage() {
     setFormDayOfWeek(1)
     setFormStartTime("09:00")
     setFormEndTime("18:00")
+    setFormBreakStartTime("")
+    setFormBreakEndTime("")
     setFormIsActive(true)
     setFormError("")
     setDialogOpen(true)
@@ -126,6 +130,8 @@ export default function AdminSchedulesPage() {
     setFormDayOfWeek(1)
     setFormStartTime("09:00")
     setFormEndTime("18:00")
+    setFormBreakStartTime("")
+    setFormBreakEndTime("")
     setFormIsActive(true)
     setFormError("")
   }
@@ -135,6 +141,8 @@ export default function AdminSchedulesPage() {
     setFormDayOfWeek(schedule.dayOfWeek)
     setFormStartTime(schedule.startTime.slice(0, 5))
     setFormEndTime(schedule.endTime.slice(0, 5))
+    setFormBreakStartTime(schedule.breakStartTime?.slice(0, 5) ?? "")
+    setFormBreakEndTime(schedule.breakEndTime?.slice(0, 5) ?? "")
     setFormIsActive(schedule.isActive)
     setFormError("")
   }
@@ -148,12 +156,35 @@ export default function AdminSchedulesPage() {
       return
     }
 
+    // Break: ambos o ninguno, y contenido dentro del turno.
+    const hasBreakStart = formBreakStartTime.trim() !== ""
+    const hasBreakEnd = formBreakEndTime.trim() !== ""
+    if (hasBreakStart !== hasBreakEnd) {
+      setFormError("El refrigerio debe tener hora de inicio y fin")
+      return
+    }
+    if (hasBreakStart && hasBreakEnd) {
+      if (formBreakStartTime >= formBreakEndTime) {
+        setFormError("El inicio del refrigerio debe ser anterior al fin")
+        return
+      }
+      if (formBreakStartTime < formStartTime || formBreakEndTime > formEndTime) {
+        setFormError("El refrigerio debe estar dentro del horario de trabajo")
+        return
+      }
+    }
+
+    const breakStartTime = hasBreakStart ? formBreakStartTime : null
+    const breakEndTime = hasBreakEnd ? formBreakEndTime : null
+
     setFormSubmitting(true)
     try {
       if (editingScheduleId) {
         await schedulesService.update(editingScheduleId, {
           startTime: formStartTime,
           endTime: formEndTime,
+          breakStartTime,
+          breakEndTime,
           isActive: formIsActive,
         })
       } else {
@@ -162,6 +193,8 @@ export default function AdminSchedulesPage() {
           dayOfWeek: formDayOfWeek,
           startTime: formStartTime,
           endTime: formEndTime,
+          breakStartTime,
+          breakEndTime,
           isActive: formIsActive,
         })
       }
@@ -339,8 +372,8 @@ export default function AdminSchedulesPage() {
               </div>
 
               {/* Row 1: Día | Inicio | Fin */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-                <div className="space-y-1.5 sm:col-span-1">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
                   <Label htmlFor="admin-day" className="text-xs">Día</Label>
                   <select
                     id="admin-day"
@@ -378,7 +411,37 @@ export default function AdminSchedulesPage() {
                 </div>
               </div>
 
-              {/* Row 2: Active toggle + action buttons */}
+              {/* Row 2: Refrigerio (break) inicio | fin */}
+              <div className="mt-3 rounded-md border border-dashed border-border bg-background/60 p-3">
+                <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Coffee className="size-3.5" />
+                  Refrigerio (opcional)
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="admin-break-start" className="text-xs">Inicio refrigerio</Label>
+                    <Input
+                      id="admin-break-start"
+                      type="time"
+                      value={formBreakStartTime}
+                      onChange={(e) => setFormBreakStartTime(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="admin-break-end" className="text-xs">Fin refrigerio</Label>
+                    <Input
+                      id="admin-break-end"
+                      type="time"
+                      value={formBreakEndTime}
+                      onChange={(e) => setFormBreakEndTime(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 3: Active toggle + action buttons */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Button
                   type="button"
@@ -441,11 +504,19 @@ export default function AdminSchedulesPage() {
                           <TableRow key={s.id} className="group transition-colors hover:bg-muted/20">
                             <TableCell className="font-medium">{DAY_NAMES[s.dayOfWeek].label}</TableCell>
                             <TableCell className="font-mono text-sm">
-                              <div className="flex items-center gap-2">
-                                <div className="flex size-6 items-center justify-center rounded bg-primary/10">
-                                  <Clock className="size-3.5 text-primary" />
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex size-6 items-center justify-center rounded bg-primary/10">
+                                    <Clock className="size-3.5 text-primary" />
+                                  </div>
+                                  {s.startTime.slice(0, 5)} — {s.endTime.slice(0, 5)}
                                 </div>
-                                {s.startTime.slice(0, 5)} — {s.endTime.slice(0, 5)}
+                                {s.breakStartTime && s.breakEndTime && (
+                                  <div className="flex items-center gap-1.5 pl-8 text-xs text-muted-foreground">
+                                    <Coffee className="size-3" />
+                                    Refrigerio {s.breakStartTime.slice(0, 5)} — {s.breakEndTime.slice(0, 5)}
+                                  </div>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>

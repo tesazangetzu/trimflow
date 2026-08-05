@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { createAppointment, lookupCustomer } from "@/services/public.service"
+import { toShopISO } from "@/lib/timezone"
 import type {
   PublicAppointmentPayload,
   AppointmentResult,
@@ -138,7 +139,7 @@ export function useBooking(slug: string) {
     setSubmitting(true)
     setError(null)
 
-    const isoStartTime = new Date(`${selectedDate}T${selectedSlot}`).toISOString()
+    const isoStartTime = toShopISO(selectedDate, selectedSlot)
 
     const payload: PublicAppointmentPayload = {
       serviceId: selectedService.id,

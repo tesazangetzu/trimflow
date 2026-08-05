@@ -42,6 +42,7 @@ https://trimflow-mauve.vercel.app  →  https://trimflow-backend.onrender.com
 | Variable | Valor | Obligatoria |
 |----------|-------|-------------|
 | `NODE_ENV` | `production` | sí |
+| `TZ` | `America/Lima` | **sí** |
 | `PORT` | `3000` | sí |
 | `API_PREFIX` | `v1` | sí |
 | `DATABASE_URL` | URL de Neon | **sí** |
@@ -55,6 +56,8 @@ https://trimflow-mauve.vercel.app  →  https://trimflow-backend.onrender.com
 | `TENANT_DB_SCHEMA_PREFIX` | `tenant_` | no |
 | `RATE_LIMIT_TTL` | `60` | no |
 | `RATE_LIMIT_MAX` | `100` | no |
+
+> ⚠️ **`TZ=America/Lima` es obligatorio.** El backend calcula la disponibilidad y marca los slots pasados (`past`) usando la hora del servidor. Sin esta variable, el servidor corre en UTC y los horarios de la landing se desfasan respecto a la hora local de la barbería (Lima, UTC-5, sin horario de verano). En el contenedor Docker, además, la imagen `node:20-alpine` requiere `tzdata` instalado (ya añadido en el `Dockerfile`).
 
 ### Migraciones y seed
 

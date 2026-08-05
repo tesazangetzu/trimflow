@@ -16,6 +16,8 @@ services:
         value: "20"
       - key: NODE_ENV
         value: production
+      - key: TZ
+        value: America/Lima
       - key: PORT
         value: 3000
       - key: API_PREFIX

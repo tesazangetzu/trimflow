@@ -41,6 +41,10 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    environment:
+      TZ: America/Lima
+      DATABASE_URL: postgresql://trimflow:trimflow@postgres:5432/trimflow
+      REDIS_URL: redis://default:redispass@redis:6379
     env_file:
       - ./backend/.env.development
     volumes:

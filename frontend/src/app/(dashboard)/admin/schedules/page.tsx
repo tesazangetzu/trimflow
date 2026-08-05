@@ -152,16 +152,16 @@ export default function AdminSchedulesPage() {
     try {
       if (editingScheduleId) {
         await schedulesService.update(editingScheduleId, {
-          startTime: `${formStartTime}:00`,
-          endTime: `${formEndTime}:00`,
+          startTime: formStartTime,
+          endTime: formEndTime,
           isActive: formIsActive,
         })
       } else {
         await schedulesService.create({
           barberId: editBarber.id,
           dayOfWeek: formDayOfWeek,
-          startTime: `${formStartTime}:00`,
-          endTime: `${formEndTime}:00`,
+          startTime: formStartTime,
+          endTime: formEndTime,
           isActive: formIsActive,
         })
       }

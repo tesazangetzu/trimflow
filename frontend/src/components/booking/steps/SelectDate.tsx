@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { todayInShop, addDays } from "@/lib/timezone"
 import type { PublicSlot } from "@/types/public"
 
 interface SelectDateProps {
@@ -27,17 +28,15 @@ interface DayOption {
 
 function getNext7Days(): DayOption[] {
   const days: DayOption[] = []
-  const today = new Date()
+  const today = todayInShop()
   for (let i = 0; i < 7; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() + i)
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, "0")
-    const day = String(d.getDate()).padStart(2, "0")
+    const dateStr = addDays(today, i)
+    const [y, m, d] = dateStr.split("-").map(Number)
+    const weekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay()
     days.push({
-      dateStr: `${y}-${m}-${day}`,
-      dayName: WEEKDAYS[d.getDay()],
-      dayNum: day,
+      dateStr,
+      dayName: WEEKDAYS[weekday],
+      dayNum: String(d),
     })
   }
   return days

@@ -348,7 +348,7 @@ export default function AdminSchedulesPage() {
 
       {/* Dialog editor */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl shadow-dialog">
+        <DialogContent className="flex max-h-[calc(100vh-4rem)] max-w-2xl flex-col overflow-hidden shadow-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="flex size-7 items-center justify-center rounded bg-primary/10">
@@ -361,7 +361,7 @@ export default function AdminSchedulesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto py-4 pr-1">
             {/* Form - fixed overflow: 2 rows instead of cramped 4 columns */}
             <form onSubmit={handleSubmit} className="rounded-lg border bg-muted/30 p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium">

@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Building2, Pencil, Lock, Unlock } from "lucide-react"
+import { Building2, Pencil, Lock, Unlock, ExternalLink } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -108,6 +109,7 @@ export default function TenantsPage() {
               <TableRow>
                 <TableHead className="bg-muted/30 py-3.5">Nombre</TableHead>
                 <TableHead className="bg-muted/30 py-3.5">Email</TableHead>
+                <TableHead className="bg-muted/30 py-3.5">Landing</TableHead>
                 <TableHead className="bg-muted/30 py-3.5">Estado</TableHead>
                 <TableHead className="bg-muted/30 py-3.5">Creado</TableHead>
                 <TableHead className="bg-muted/30 py-3.5 text-right"></TableHead>
@@ -130,6 +132,17 @@ export default function TenantsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="py-3">{tenant.email || "—"}</TableCell>
+                    <TableCell className="py-3">
+                      <Link
+                        href={`/${tenant.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                      >
+                        <ExternalLink className="size-3.5" />
+                        /{tenant.slug}
+                      </Link>
+                    </TableCell>
                     <TableCell className="py-3">
                       <Badge variant={statusColor(tenant.status)}>{tenant.status}</Badge>
                     </TableCell>

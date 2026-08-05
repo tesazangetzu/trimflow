@@ -219,6 +219,7 @@ export function BookingWizard({ slug }: { slug: string }) {
             branch={activeBranch}
             selectedDate={booking.selectedDate}
             selectedSlot={booking.selectedSlot}
+            slug={slug}
           />
         )}
       </div>

@@ -9,6 +9,7 @@ interface SuccessProps {
   branch: PublicBranch | null
   selectedDate: string
   selectedSlot: string
+  slug: string
 }
 
 function formatDate(dateStr: string): string {
@@ -27,6 +28,7 @@ export function Success({
   branch,
   selectedDate,
   selectedSlot,
+  slug,
 }: SuccessProps) {
   return (
     <div className="py-2 text-center">
@@ -68,8 +70,16 @@ export function Success({
         Enviaremos la confirmación al email indicado.
       </p>
 
-      <a href="/login" className="mt-6 inline-block">
-        <Button variant="outline">Ir al inicio</Button>
+      <a
+        href={`/${slug}`}
+        onClick={(e) => {
+          e.preventDefault()
+          // Navegación completa: reinicia el wizard al paso inicial vacío.
+          window.location.href = `/${slug}`
+        }}
+        className="mt-6 inline-block"
+      >
+        <Button variant="outline">Volver al inicio</Button>
       </a>
     </div>
   )

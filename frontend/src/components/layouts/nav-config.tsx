@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Clock,
   LayoutDashboard,
+  Palette,
   Scissors,
   Store,
   UserCog,
@@ -27,6 +28,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/schedules", label: "Horarios", icon: CalendarDays, section: "menu" },
   { href: "/admin/customers", label: "Clientes", icon: Users, section: "menu" },
   { href: "/admin/appointments", label: "Citas", icon: CalendarCheck, section: "others" },
+  { href: "/admin/landing", label: "Landing", icon: Palette, section: "others" },
 ]
 
 export const BARBER_NAV: NavItem[] = [

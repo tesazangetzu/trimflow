@@ -23,6 +23,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { PublicModule } from './modules/public/public.module';
+import { LandingModule } from './modules/landing/landing.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { PublicModule } from './modules/public/public.module';
     SettingsModule,
     ScheduleModule,
     PublicModule,
+    LandingModule,
   ],
   providers: [
     {

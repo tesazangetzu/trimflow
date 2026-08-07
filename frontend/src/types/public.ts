@@ -1,3 +1,5 @@
+import type { LandingConfig } from "./landing"
+
 export interface PublicBarber {
   id: string
   name: string
@@ -26,6 +28,7 @@ export interface PublicShop {
   slug: string
   name: string
   email: string | null
+  landing: LandingConfig
   branches: PublicBranch[]
 }
 

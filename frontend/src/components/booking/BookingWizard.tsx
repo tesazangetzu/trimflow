@@ -11,7 +11,7 @@ import { Checkout } from "@/components/booking/steps/Checkout"
 import { Success } from "@/components/booking/steps/Success"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { PublicBranch } from "@/types/public"
+import type { PublicBranch, PublicShop } from "@/types/public"
 
 const STEP_LABELS: Record<string, string> = {
   service: "Servicio",
@@ -21,17 +21,18 @@ const STEP_LABELS: Record<string, string> = {
   success: "Confirmación",
 }
 
-export function BookingWizard({ slug }: { slug: string }) {
+export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: PublicShop }) {
   const { shop, loading, notFound, error, reload } = usePublicData(slug)
+  const resolvedShop = shopProp ?? shop
   const [activeBranchId, setActiveBranchId] = useState<string | null>(null)
 
   const booking = useBooking(slug)
 
   const activeBranch: PublicBranch | null = useMemo(() => {
-    if (!shop || shop.branches.length === 0) return null
-    const found = shop.branches.find((b) => b.id === activeBranchId)
-    return found ?? shop.branches[0]
-  }, [shop, activeBranchId])
+    if (!resolvedShop || resolvedShop.branches.length === 0) return null
+    const found = resolvedShop.branches.find((b) => b.id === activeBranchId)
+    return found ?? resolvedShop.branches[0]
+  }, [resolvedShop, activeBranchId])
 
   const services: WizardService[] = useMemo(() => {
     if (!activeBranch) return []
@@ -54,7 +55,7 @@ export function BookingWizard({ slug }: { slug: string }) {
     booking.selectedDate,
   )
 
-  if (loading) {
+  if (!shopProp && loading) {
     return (
       <div className="mx-auto max-w-xl animate-pulse space-y-4 py-10">
         <div className="h-8 w-2/3 rounded bg-muted" />
@@ -80,7 +81,7 @@ export function BookingWizard({ slug }: { slug: string }) {
     )
   }
 
-  if (error || !shop) {
+  if (!resolvedShop || (!shopProp && error)) {
     return (
       <div className="mx-auto max-w-xl py-16 text-center">
         <h1 className="text-xl font-semibold text-foreground">Algo salió mal</h1>
@@ -102,15 +103,15 @@ export function BookingWizard({ slug }: { slug: string }) {
         <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-3xl ring-1 ring-primary/30">
           💈
         </div>
-        <h1 className="text-2xl font-bold text-foreground">{shop.name}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{resolvedShop.name}</h1>
         {activeBranch?.address && (
           <p className="mt-1 text-sm text-muted-foreground">{activeBranch.address}</p>
         )}
       </header>
 
-      {shop.branches.length > 1 && (
+      {resolvedShop.branches.length > 1 && (
         <div className="mb-6 flex flex-wrap justify-center gap-2">
-          {shop.branches.map((branch) => (
+          {resolvedShop.branches.map((branch) => (
             <button
               key={branch.id}
               type="button"
@@ -215,7 +216,7 @@ export function BookingWizard({ slug }: { slug: string }) {
         {booking.step === "success" && booking.appointment && (
           <Success
             appointment={booking.appointment}
-            shopName={shop.name}
+            shopName={resolvedShop.name}
             branch={activeBranch}
             selectedDate={booking.selectedDate}
             selectedSlot={booking.selectedSlot}

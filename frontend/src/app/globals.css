@@ -266,3 +266,10 @@
     font-family: 'Poppins', system-ui, sans-serif;
   }
 }
+
+/* ── Landing pública (estilo urbano/street) ──
+   Estas animaciones solo las usa la landing `/[slug]`. No afectan al dashboard. */
+@keyframes landing-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-33.333%); }
+}

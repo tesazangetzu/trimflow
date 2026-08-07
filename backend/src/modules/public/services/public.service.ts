@@ -4,6 +4,7 @@ import { BranchService } from '../../branches/services/branch.service';
 import { BarberService } from '../../barbers/services/barber.service';
 import { ServiceService } from '../../services/services/service.service';
 import { TenantStatus } from '../../tenants/entities/tenant.entity';
+import { mergeLandingConfig } from '../../landing/landing-config';
 import { EntityNotFoundException } from '../../../shared/exceptions';
 
 @Injectable()
@@ -52,6 +53,7 @@ export class PublicService {
       slug: tenant.slug,
       name: tenant.name,
       email: tenant.email ?? null,
+      landing: mergeLandingConfig(tenant.settings?.landing),
       branches: publicBranches,
     };
   }

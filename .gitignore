@@ -36,3 +36,6 @@ Thumbs.db
 
 # Copia residual de documentación (fuente de verdad: .docs/)
 .opencode/.docs/
+
+# Artefacto derivado regenerable (knowledge graph de Graphify)
+graphify-out/

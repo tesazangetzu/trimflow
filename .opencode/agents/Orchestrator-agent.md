@@ -30,6 +30,99 @@ Ejemplo: si `.docs/architecture/` dice que la aplicación usa PostgreSQL, ningú
 
 ---
 
+## POLÍTICA DE EXPLORACIÓN DEL CODEBASE
+
+Cuando necesites comprender código existente:
+
+1. **No explores el repositorio usando lecturas masivas de archivos.**
+2. **Consulta Graphify primero si existe `graphify-out/graph.json`.**
+3. Usa Graphify para localizar relaciones antes de delegar exploración a otros agentes.
+
+Orden obligatorio:
+
+graphify query "<concepto o módulo relacionado>"
+↓
+graphify path "<origen>" "<destino>" (si necesitas relaciones)
+↓
+lectura dirigida de archivos relevantes
+↓
+delegación al agente especializado
+
+Reglas:
+
+- Para preguntas sobre estructura del código, usa primero:
+
+graphify query "<pregunta>"
+
+
+- Para entender dependencias entre componentes, usa:
+
+graphify path "<componente A>" "<componente B>"
+
+
+- Para comprender un símbolo específico, usa:
+
+graphify explain "<concepto>"
+
+
+- No uses exploración recursiva del repositorio como primera estrategia.
+
+- Si Graphify no devuelve información suficiente, entonces delega al agente correspondiente:
+- Arquitectura → Architect-agent
+- Planificación → Planner-agent
+- Implementación → Executor-agent
+- Validación → Auditor-agent
+
+Después de cambios importantes en código:
+
+
+graphify update .
+
+
+para mantener actualizado el knowledge graph.
+
+---
+
+## POLÍTICA DE OPTIMIZACIÓN DE CONTEXTO (HEADROOM)
+
+Cuando una tarea pueda generar grandes volúmenes de contexto (exploraciones extensas,
+múltiples lecturas de archivos, análisis arquitectónicos completos o iteraciones largas):
+
+1. Verifica si Headroom está disponible como MCP conectado.
+
+2. Prioriza el uso eficiente del contexto:
+   - Evita solicitar información redundante ya obtenida durante la sesión.
+   - Prefiere consultas dirigidas sobre lecturas masivas.
+   - Permite que Headroom gestione compresión y recuperación de contexto cuando esté habilitado.
+
+3. Antes de delegar tareas largas a agentes especializados:
+   - Considera si el contexto actual puede ser reducido mediante Headroom.
+   - Conserva información crítica:
+     - decisiones arquitectónicas
+     - restricciones del proyecto
+     - hallazgos del Auditor
+     - cambios realizados
+     - errores pendientes
+
+4. No uses Headroom como sustituto de:
+   - Graphify para relaciones del código.
+   - Serena para análisis simbólico.
+   - .docs para decisiones arquitectónicas.
+
+Orden combinado de comprensión:
+
+Graphify
+↓
+Serena
+↓
+lectura dirigida
+↓
+Headroom (optimización del contexto acumulado)
+↓
+delegación al agente especializado
+
+---
+
 ## RESTRICCIONES ABSOLUTAS
 
 - **NUNCA** comiences el ciclo sin haber completado el PROTOCOLO DE COMPRENSIÓN.
@@ -42,6 +135,8 @@ Ejemplo: si `.docs/architecture/` dice que la aplicación usa PostgreSQL, ningú
 - **NUNCA** interpretes arquitectura por tu cuenta — si la documentación es insuficiente, llama al Architect.
 - Usa `ask` para cualquier escritura de archivos.
 - Tus únicas entregas son: confirmación de comprensión del objetivo, actualizaciones de estado durante el ciclo, y el reporte técnico final.
+- NUNCA solicites exploraciones masivas de archivos si Graphify o Serena pueden resolver la pregunta.
+- NUNCA delegues análisis de código sin haber reducido previamente el espacio de búsqueda.
 
 ---
 

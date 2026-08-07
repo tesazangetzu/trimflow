@@ -46,8 +46,8 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 
 ### Break del barbero (ver ADR-011)
 
-- [ ] Break de un solo bloque por día sobre el horario del barbero (`Schedule.breakStartTime`/`breakEndTime`).
-- [ ] El break se respeta en el cálculo de disponibilidad (público y admin).
+- [x] Break de un solo bloque por día sobre el horario del barbero (`Schedule.breakStartTime`/`breakEndTime`).
+- [x] El break se respeta en el cálculo de disponibilidad (público y admin).
 
 ### Landing pública de reservas (ver ADR-012)
 
@@ -59,6 +59,16 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 - [ ] Sólo se muestran horarios disponibles; los pasados aparecen bloqueados (no seleccionables).
 - [ ] Email obligatorio del cliente (confirmación por email; sin WhatsApp/SMS en MVP).
 - [ ] Slug auto-generado del nombre (slugify) con sufijo único en colisión y campo editable opcional (requisito admin).
+
+### Personalización de la landing pública por tenant (ver ADR-013)
+
+- [ ] Config por tenant persistida en `Tenant.settings.landing` (JSONB), fusionada sobre `LANDING_DEFAULTS` (merge defensivo).
+- [ ] Endpoints `/v1/landing` GET/PUT protegidos (JWT + RBAC, rol admin), escopados por `tenantId` del token.
+- [ ] Panel admin `/admin/landing`: edición de presentación, marca/imágenes, paleta, tipografía y secciones visibles.
+- [ ] Acciones "Restaurar default" y "Ver mi landing" en el panel.
+- [ ] La personalización aplica SOLO a la landing pública `/[slug]` (aislamiento por CSS variables); los dashboards conservan su tema.
+- [ ] `PublicShop.landing` inyecta la config en el payload de `/v1/public/:slug`.
+- [ ] Fuentes Archivo / Space Grotesk cargadas vía `next/font` solo para la landing.
 
 ### Notificaciones (asíncronas)
 

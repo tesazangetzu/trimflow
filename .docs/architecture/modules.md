@@ -129,6 +129,16 @@ src/
 │   │   ├── interfaces/
 │   │   └── public.module.ts
 │   │
+│   ├── landing/                      # Personalización de la landing pública por tenant
+│   │   │                             #   (ver ADR-013: config en Tenant.settings.landing JSONB)
+│   │   ├── __tests__/
+│   │   ├── services/                 # Persistencia en Tenant.settings.landing + merge sobre defaults
+│   │   ├── controllers/              # /v1/landing GET/PUT (protegidos JWT + RBAC admin)
+│   │   ├── dto/                      # UpdateLandingConfigDto (parcial, class-validator)
+│   │   ├── interfaces/
+│   │   └── landing.module.ts
+│   │   └── landing-config.ts         # Interfaces + LANDING_DEFAULTS + mergeLandingConfig
+│   │
 │   └── settings/                   # Configuración del negocio
 │       ├── __tests__/
 │       ├── entities/
@@ -154,6 +164,8 @@ auth ──→ shared/
 notifications ──→ shared/
 settings ──→ branches
 public ──→ tenants (slug) ──→ branches ──→ barbers / services / schedule / customers / appointments
+public ──→ landing (mergeLandingConfig / config pública) (ver ADR-013)
+landing ──→ tenants (settings JSONB) / shared (guards, decorators, excepciones, logger)
 ```
 
 ### Reglas de dependencia
@@ -186,6 +198,23 @@ En el paso de datos, al escribir el email se hace el **lookup** público para au
 
 Los slots válidos resultan de la intersección de: horario de tienda (`Branch.openingTime/closingTime`), horario del barbero (`Schedule.startTime/endTime` si `isActive`), **break del barbero** (`Schedule.breakStartTime/breakEndTime`, ver **ADR-011**), bloqueos puntuales (`AvailabilityBlock`) y citas existentes (`Appointment`). Se descarta cualquier slot que no quepa completo por `Service.durationMinutes`. Los slots **pasados** se muestran pero **bloqueados** (no seleccionables).
 
+## Módulo de personalización de la landing (`landing`)
+
+El módulo `landing` expone la **configuración de la landing pública por tenant** (ver **ADR-013**). A diferencia de `public`, este módulo SÍ usa guards JWT: solo un **Administrador** autenticado puede leer/editar la config de su propio tenant. El alcance se resuelve por el `tenantId` del `@CurrentUser` del token (aislamiento multi-tenant), nunca desde el body ni la URL.
+
+### Contratos HTTP (`/v1/landing`)
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/v1/landing` | Config completa de la landing del tenant (`{ slug, config }`): defaults fusionados con lo guardado. |
+| PUT | `/v1/landing` | Actualización PARCIAL de la config (DTO `UpdateLandingConfigDto` con class-validator). Devuelve la config completa resultante. |
+
+### Persistencia y consumo
+
+- La config se guarda en `Tenant.settings.landing` (JSONB) y se **fusiona sobre `LANDING_DEFAULTS`** mediante `mergeLandingConfig` (merge profundo defensivo; siempre devuelve un `LandingConfig` completo y válido). No requiere migración de DB.
+- El consumo público se inyecta en el payload `PublicShop.landing` (`/v1/public/:slug`).
+- La config aplica **SOLO** a la landing pública `/[slug]`; los dashboards conservan su tema (aislamiento por CSS variables de scope local en `landing-theme.ts`).
+
 ## Clean Architecture dentro de cada módulo
 
 ```
@@ -203,13 +232,17 @@ módulo/
 ```
 src/
   app/                    # Páginas (Next.js App Router)
+    (dashboard)/admin/landing/   # Panel de personalización de la landing pública (ver ADR-013)
+    [slug]/              # Landing pública de reservas por slug (ver ADR-012)
   components/             # Componentes React compartidos
     ui/                   # shadcn/ui components
     forms/                # Formularios reutilizables
-    layouts/              # Layouts por rol (admin, barber, super-admin)
+    layouts/              # Layouts por rol (admin, barber, super-admin) + nav-config
+    landing/              # Componentes de la landing pública (LandingPage/Hero/Sections + landing-theme)
+    booking/              # BookingWizard (flujo de reserva pública)
   lib/                    # Utilidades compartidas
-  services/               # Clientes API (por módulo)
+  services/               # Clientes API (por módulo): landing.service.ts, etc.
   hooks/                  # Custom hooks
-  types/                  # Tipos TypeScript compartidos
+  types/                  # Tipos TypeScript compartidos (landing.ts, public.ts)
   __tests__/              # Pruebas
 ```

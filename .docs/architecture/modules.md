@@ -234,11 +234,20 @@ src/
   app/                    # Páginas (Next.js App Router)
     (dashboard)/admin/landing/   # Panel de personalización de la landing pública (ver ADR-013)
     [slug]/              # Landing pública de reservas por slug (ver ADR-012)
+    [slug]/reservar/     # Vista de reserva separada (BookingWizard reutilizado), ver ADR-014
   components/             # Componentes React compartidos
     ui/                   # shadcn/ui components
     forms/                # Formularios reutilizables
     layouts/              # Layouts por rol (admin, barber, super-admin) + nav-config
-    landing/              # Componentes de la landing pública (LandingPage/Hero/Sections + landing-theme)
+    landing/              # Componentes de la landing pública (ver ADR-012/013/014)
+      LandingPage.tsx     #   Hero + 4 secciones informativas (Servicios/Equipo/Horarios/Ubicación)
+      LandingHero.tsx     #   Hero banda tinta + stagger + marquesina
+      LandingSections.tsx #   Secciones con alternancia marfil/tan + strop
+      LandingNav.tsx      #   Sticky nav + anclas + indicador barber-pole
+      LandingCTA.tsx      #   CTA "Reservar" (sweep + escuadra barber-pole)
+      LandingState.tsx    #   Estados loading/notFound/error
+      Reveal.tsx          #   Scroll reveal (IntersectionObserver + prefers-reduced-motion)
+      landing-theme.ts    #   landingThemeVars: paleta «Umbral de tinta + libro de cuentas»
     booking/              # BookingWizard (flujo de reserva pública)
   lib/                    # Utilidades compartidas
   services/               # Clientes API (por módulo): landing.service.ts, etc.

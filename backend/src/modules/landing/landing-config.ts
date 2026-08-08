@@ -2,8 +2,9 @@
  * Configuración de la landing pública por tenant.
  *
  * La configuración se guarda en `Tenant.settings.landing` (JSONB) y se fusiona
- * sobre estos defaults. La estética por defecto es «Umbral de tinta + libro de
- * cuentas» (ADR-014): hero tinta + páginas marfil.
+ * sobre estos defaults. La estética por defecto es «dark luxury» (ADR-015):
+ * negro carbón + dorado old-gold. Los tenants con configuración guardada
+ * conservan su paleta hasta pulsar «Restaurar default».
  *
  * IMPORTANTE: esta configuración aplica SOLO a la landing pública (`/[slug]`).
  * No afecta a los dashboards (admin/barber/super-admin), que conservan su tema.
@@ -69,12 +70,12 @@ export interface LandingConfig {
 export const LANDING_DEFAULTS: LandingConfig = {
   enabled: true,
   palette: {
-    asphalt: '#F4EBDD',
-    concrete: '#E6D9C3',
-    smoke: '#6E5E52',
-    bone: '#2B211C',
-    neon: '#6F1E23',
-    blood: '#A4161A',
+    asphalt: '#0A0A0A',
+    concrete: '#111111',
+    smoke: '#8A8178',
+    bone: '#F2EDE4',
+    neon: '#C9A227',
+    blood: '#C0392B',
   },
   typography: {
     display: 'Marcellus',

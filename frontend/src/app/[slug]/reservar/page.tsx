@@ -21,11 +21,11 @@ function ReserveSkeleton() {
   return (
     <div
       className="flex min-h-screen items-center justify-center"
-      style={{ background: "#F4EBDD" }}
+      style={{ background: "#0A0A0A" }}
     >
       <div className="animate-pulse text-center">
-        <div className="mx-auto mb-4 h-3 w-40" style={{ background: "#E6D9C3" }} />
-        <div className="h-12 w-64" style={{ background: "#E6D9C3" }} />
+        <div className="mx-auto mb-4 h-3 w-40" style={{ background: "#111111" }} />
+        <div className="h-12 w-64" style={{ background: "#111111" }} />
       </div>
     </div>
   )

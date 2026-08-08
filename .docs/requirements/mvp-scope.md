@@ -68,7 +68,8 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 - [ ] Acciones "Restaurar default" y "Ver mi landing" en el panel.
 - [ ] La personalización aplica SOLO a la landing pública `/[slug]` (aislamiento por CSS variables); los dashboards conservan su tema.
 - [ ] `PublicShop.landing` inyecta la config en el payload de `/v1/public/:slug`.
-- [ ] Fuentes Archivo / Space Grotesk cargadas vía `next/font` solo para la landing.
+- [ ] La identidad visual por defecto es dark luxury (ADR-015): paleta dark dorada sobre los **mismos 6 tokens `--landing-*`**, fuentes Marcellus / Spectral / IBM Plex Mono (IBM Plex como utility), barber-pole→hilo/motivo dorado; la personalización del tenant sigue aislada por CSS variables de scope local.
+- [ ] Se preparan Galería/Stats como capas frontend condicionales en la landing (ocultas por defecto; sin inventar datos ni imágenes).
 
 ### Notificaciones (asíncronas)
 

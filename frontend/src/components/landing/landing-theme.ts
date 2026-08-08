@@ -16,9 +16,11 @@ export function landingThemeVars(config: LandingConfig): CSSProperties {
     "--landing-font-display": fontFamily(config.typography.display),
     "--landing-font-body": fontFamily(config.typography.body),
     "--landing-font-mono": "var(--font-plex-mono), monospace",
-    "--landing-hero-bg": "#14100E",
-    "--landing-hero-fg": "#F3EBDD",
-    "--landing-hero-muted": "#B9AB97",
+    // Vars de hero derivadas de la paleta (ADR-015): sin hexes sueltos, para que
+    // los tenants con paleta guardada conserven su hero coherente.
+    "--landing-hero-bg": config.palette.asphalt,
+    "--landing-hero-fg": config.palette.bone,
+    "--landing-hero-muted": config.palette.smoke,
   } as CSSProperties
 }
 

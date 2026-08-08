@@ -267,7 +267,7 @@
   }
 }
 
-/* ── Landing pública («Umbral de tinta + libro de cuentas», ADR-014) ──
+/* ── Landing pública («dark luxury», ADR-015) ──
    Estas animaciones/estilos solo los usa la landing `/[slug]` y `/[slug]/reservar`.
    No afectan al dashboard. */
 
@@ -307,14 +307,100 @@
   clip-path: polygon(0 0, 0% 100%, 100% 50%);
 }
 
-/* Barber-pole: franja tricolor (oxblood / tan / marfil). Firma visual (ADR-014). */
+/* Firma visual (ADR-015): gold-hairline. Franja dorada old-gold que sustituye
+   a la barber-pole tricolor (ADR-014). Se usa en el indicador de sección activa
+   de la navbar, el hilo de progreso de scroll y la escuadra del CTA band. */
 .landing-pole {
-  background-image: repeating-linear-gradient(
-    135deg,
-    var(--landing-accent) 0 4px,
-    var(--landing-surface) 4px 8px,
-    var(--landing-bg) 8px 12px
-  );
+  background: var(--landing-accent);
+}
+
+/* Tarjeta premium (ADR-015): hairline dorado en el borde superior.
+   A reposo a 40% de opacidad; a pleno en hover (bordes dorados con moderación). */
+.landing-card {
+  position: relative;
+}
+.landing-card::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 2px;
+  background: var(--landing-accent);
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.landing-card:hover::before {
+  opacity: 1;
+}
+
+/* Botón «RESERVAR» de las tarjetas y footer (ADR-015): outline dorado que se
+   rellena de dorado en hover con el texto pasando a fondo oscuro. Se define
+   como clase para evitar la ambigüedad de `text-[var(--x)]` en Tailwind v4. */
+.landing-card-link {
+  display: inline-block;
+  border: 1px solid var(--landing-accent);
+  color: var(--landing-accent);
+  font-family: var(--landing-font-mono);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+.landing-card-link:hover {
+  background-color: var(--landing-accent);
+  color: var(--landing-bg);
+}
+
+/* Navbar de la landing (ADR-015): transparente en reposo sobre el hero y con
+   fondo oscuro translúcido + blur al superar el umbral de scroll. */
+.landing-nav {
+  background: transparent;
+  border-color: transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.landing-nav.is-scrolled {
+  background: color-mix(in srgb, var(--landing-bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--landing-surface);
+}
+
+/* Panel de la hamburguesa (<md): colapsado por defecto, desplegado con `is-open`. */
+.landing-nav-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.landing-nav.is-open .landing-nav-panel {
+  max-height: 24rem;
+}
+
+/* Marquesina (ADR-015): se mantiene la keyframe landing-marquee; se agrupa en
+   esta clase para poder desactivarla con prefers-reduced-motion. */
+.landing-marquee {
+  animation: landing-marquee 28s linear infinite;
+}
+
+/* Indicador de scroll del hero (ADR-015): caret dorado animado en la parte baja. */
+.landing-scroll-hint {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--landing-accent);
+  text-decoration: none;
+}
+.landing-scroll-chevron {
+  animation: landing-scroll-pulse 2.2s ease-in-out infinite;
+}
+@keyframes landing-scroll-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(5px);
+  }
 }
 
 /* Scroll reveal (IntersectionObserver, Fase 4). */
@@ -353,5 +439,18 @@
   .landing-hero .landing-hero-block {
     animation: none;
     opacity: 1;
+  }
+  .landing-marquee {
+    animation: none;
+  }
+  .landing-scroll-chevron {
+    animation: none;
+  }
+  .landing-scroll-hint {
+    display: none;
+  }
+  .landing-nav,
+  .landing-card::before {
+    transition: none;
   }
 }

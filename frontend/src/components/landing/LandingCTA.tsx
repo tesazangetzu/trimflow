@@ -12,14 +12,14 @@ export function LandingCTA({ slug, shopName }: LandingCtaProps) {
   return (
     <section
       className="relative overflow-hidden"
-      style={{ background: "var(--landing-hero-bg, #14100E)" }}
+      style={{ background: "var(--landing-hero-bg, #0A0A0A)" }}
     >
       <Reveal>
         <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:px-6 sm:py-20">
           <p
             className="mb-3 text-xs font-semibold uppercase tracking-[0.3em]"
             style={{
-              color: "var(--landing-surface)",
+              color: "var(--landing-muted)",
               fontFamily: "var(--landing-font-mono)",
             }}
           >
@@ -27,13 +27,13 @@ export function LandingCTA({ slug, shopName }: LandingCtaProps) {
           </p>
           <h2
             className="text-3xl font-bold uppercase leading-tight tracking-tight sm:text-4xl"
-            style={{ color: "var(--landing-hero-fg, #F3EBDD)", fontFamily: "var(--landing-font-display)" }}
+            style={{ color: "var(--landing-hero-fg, #F2EDE4)", fontFamily: "var(--landing-font-display)" }}
           >
             Tu asiento en la silla
           </h2>
           <p
             className="mx-auto mt-4 max-w-xl text-base"
-            style={{ color: "var(--landing-hero-muted, #B9AB97)", fontFamily: "var(--landing-font-body)" }}
+            style={{ color: "var(--landing-hero-muted, #8A8178)", fontFamily: "var(--landing-font-body)" }}
           >
             Elige servicio, barbero y hora. Confirmación inmediata, sin llamadas ni esperas.
           </p>
@@ -46,10 +46,10 @@ export function LandingCTA({ slug, shopName }: LandingCtaProps) {
               fontFamily: "var(--landing-font-display)",
             }}
           >
-            {/* Sweep de relleno (ADR-014 §5) */}
+            {/* Sweep de relleno */}
             <span
               className="absolute inset-0 translate-x-[-101%] transition-transform duration-300 group-hover:translate-x-0"
-              style={{ background: "var(--landing-hero-fg, #F3EBDD)" }}
+              style={{ background: "var(--landing-hero-fg, #F2EDE4)" }}
               aria-hidden
             />
             <span className="relative">Reservar ahora</span>

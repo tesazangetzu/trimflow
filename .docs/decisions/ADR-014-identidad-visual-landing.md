@@ -122,3 +122,11 @@ La landing `/[slug]` muestra SOLO información de la barbería (Servicios, Equip
 - **`app/globals.css`**: se retoca el keyframe `landing-marquee` (reskin) y se añaden `.landing-strop` (hairline + caret) y las vars de la nueva paleta.
 - **Backend `backend/src/modules/landing/landing-config.ts`**: actualización de `LANDING_DEFAULTS.palette` (hex) y tipografía (family "Marcellus"/"Spectral"/"IBM Plex Mono"); sin cambios de esquema/merge.
 - No se requiere migración de DB (reutiliza `Tenant.settings.landing`).
+
+---
+
+## Actualización 2026-08-08
+
+La identidad «Umbral de tinta + libro de cuentas» queda **reemplazada como identidad de serie** por la nueva **dark luxury** (ver **ADR-015**): fondo negro/negro carbón con acento dorado old-gold, tarjetas premium con hairline dorado y CTA siempre visible; el motivo **barber-pole tricolor** se redefine como **hilo/motivo dorado** (mismos 3 usos: indicador de nav, progreso de scroll, escuadra del CTA band); Galería y Stats se preparan como capas frontend condicionales (ocultas por defecto). Las fuentes **Marcellus/Spectral/IBM Plex Mono se mantienen**.
+
+ADR-014 permanece vigente como **registro histórico de la implementación** previa y como base estructural: la física de la landing (rutas `/[slug]` + `/[slug]/reservar`, separación del formulario, componentes `landing/`, CSS vars de scope local) **no cambia**. Los defaults de `LANDING_DEFAULTS` (backend + `types/landing.ts`) pasan a la paleta dark luxury definida en **ADR-015**.

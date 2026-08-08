@@ -233,22 +233,25 @@ módulo/
 src/
   app/                    # Páginas (Next.js App Router)
     (dashboard)/admin/landing/   # Panel de personalización de la landing pública (ver ADR-013)
-    [slug]/              # Landing pública de reservas por slug (ver ADR-012)
+    [slug]/              # Landing pública por slug — identidad dark luxury (ver ADR-012/015)
     [slug]/reservar/     # Vista de reserva separada (BookingWizard reutilizado), ver ADR-014
   components/             # Componentes React compartidos
     ui/                   # shadcn/ui components
     forms/                # Formularios reutilizables
     layouts/              # Layouts por rol (admin, barber, super-admin) + nav-config
-    landing/              # Componentes de la landing pública (ver ADR-012/013/014)
-      LandingPage.tsx     #   Hero + 4 secciones informativas (Servicios/Equipo/Horarios/Ubicación)
-      LandingHero.tsx     #   Hero banda tinta + stagger + marquesina
-      LandingSections.tsx #   Secciones con alternancia marfil/tan + strop
-      LandingNav.tsx      #   Sticky nav + anclas + indicador barber-pole
-      LandingCTA.tsx      #   CTA "Reservar" (sweep + escuadra barber-pole)
+    landing/              # Componentes de la landing pública (ver ADR-012/013/014/015)
+      LandingPage.tsx     #   Orquestador: Hero + secciones + CTA + Footer (incluye Gallery/Stats capas)
+      LandingHero.tsx     #   Hero dark: banda oscura + scrim/imagen + doble CTA + scroll indicator + marquesina
+      LandingSections.tsx #   Secciones dark (Servicios/Equipo/Galería/Stats/Horarios/Ubicación) + strop dorado
+      LandingNav.tsx      #   Nav transparente→oscuro al scroll + anchors + CTA + hamburguesa (mobile)
+      LandingCTA.tsx      #   CTA band "Reservar" (sweep + motivo dorado)
+      LandingFooter.tsx   #   Footer dinámico (nombre del shop + TrimFlow), extraído de LandingPage
+      LandingGallery.tsx  #   Galería grid/masonry (capa preparada: oculta hasta que exista config de imágenes)
+      LandingStats.tsx    #   Stats (capa preparada: oculta hasta que existan cifras configurables)
       LandingState.tsx    #   Estados loading/notFound/error
       Reveal.tsx          #   Scroll reveal (IntersectionObserver + prefers-reduced-motion)
-      landing-theme.ts    #   landingThemeVars: paleta «Umbral de tinta + libro de cuentas»
-    booking/              # BookingWizard (flujo de reserva pública)
+      landing-theme.ts    #   landingThemeVars: paleta dark luxury sobre los 6 tokens --landing-* (ADR-013/015)
+    booking/              # BookingWizard + ReservationPage (flujo de reserva pública) + WIZARD_TOKENS scoped
   lib/                    # Utilidades compartidas
   services/               # Clientes API (por módulo): landing.service.ts, etc.
   hooks/                  # Custom hooks

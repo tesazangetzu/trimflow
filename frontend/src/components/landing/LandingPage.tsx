@@ -5,7 +5,10 @@ import { LandingState } from "@/components/landing/LandingState"
 import { LandingNav } from "@/components/landing/LandingNav"
 import { LandingHero } from "@/components/landing/LandingHero"
 import { LandingSections } from "@/components/landing/LandingSections"
+import { LandingGallery } from "@/components/landing/LandingGallery"
+import { LandingStats } from "@/components/landing/LandingStats"
 import { LandingCTA } from "@/components/landing/LandingCTA"
+import { LandingFooter } from "@/components/landing/LandingFooter"
 import { landingThemeVars } from "@/components/landing/landing-theme"
 import { LANDING_DEFAULTS, type LandingConfig } from "@/types/landing"
 
@@ -40,20 +43,15 @@ export function LandingPage({ slug }: { slug: string }) {
         hasHeroImage={Boolean(config.branding.heroImageUrl)}
       />
 
-      <LandingSections shop={shop} config={config} />
+      <LandingSections shop={shop} config={config} slug={slug} />
+
+      {/* Capas preparadas (ADR-015 §5): sin dato en el payload, retornan null */}
+      <LandingGallery photos={[]} />
+      <LandingStats stats={[]} />
 
       {config.sections.booking && <LandingCTA slug={slug} shopName={shop.name} />}
 
-      <footer
-        className="py-8 text-center text-xs font-semibold uppercase tracking-[0.25em]"
-        style={{
-          color: "var(--landing-muted)",
-          fontFamily: "var(--landing-font-mono)",
-          background: "var(--landing-bg)",
-        }}
-      >
-        <span style={{ color: "var(--landing-accent)" }}>{shop.name}</span> · Powered by TrimFlow
-      </footer>
+      <LandingFooter shopName={shop.name} slug={slug} />
     </div>
   )
 }

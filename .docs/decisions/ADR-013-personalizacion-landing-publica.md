@@ -107,3 +107,11 @@ El payload público de la landing, `GET /v1/public/:slug`, devuelve `landing: me
 Los **valores por defecto** de la paleta y la tipografía de la landing cambiaron con la nueva identidad visual (`LANDING_DEFAULTS` y su espejo frontend `types/landing.ts`: nueva paleta marfil/tan/tinta/oxblood y fuentes Marcellus/Spectral/IBM Plex Mono). Ver **ADR-014**.
 
 El **mecanismo de ADR-013 permanece intacto**: la personalización sigue persistiendo en `Tenant.settings.landing` (JSONB) y fusionándose sobre los nuevos defaults con `mergeLandingConfig`; la estética sigue aislándose a `/[slug]` por CSS variables de scope local vía `landingThemeVars`. Los tenants con config guardada **conservan su paleta/fuentes** hasta pulsar "Restaurar default" en `/admin/landing` (entonces heredan la nueva identidad). Sin cambios de contrato API ni migración de DB.
+
+---
+
+## Actualización 2026-08-08
+
+Los **valores por defecto** de la paleta cambian de nuevo hacia la identidad **dark luxury** (`LANDING_DEFAULTS` backend y su espejo frontend `types/landing.ts`): fondo `#0A0A0A`/superficie `#111111`, texto marfil `#F2EDE4`, muted taupe `#8A8178`, acento dorado old-gold `#C9A227` y danger rojo ladrillo `#C0392B`. Las fuentes display/body **se mantienen** (Marcellus/Spectral; IBM Plex Mono como utility). Ver **ADR-015**.
+
+El **esquema ADR-013 permanece intacto**: los **mismos 6 tokens** `--landing-*` (asphalt/concrete/smoke/bone/neon/blood), la física de CSS variables de scope local (`landingThemeVars`), el merge defensivo y la persistencia en `Tenant.settings.landing` no cambian; **no se añade campo nuevo** (ni `theme`, ni `gallery`, ni `stats`) en esta iteración. Los tenants con config guardada **conservan su paleta** hasta pulsar "Restaurar default" en `/admin/landing`. Sin cambios de contrato API ni migración de DB.

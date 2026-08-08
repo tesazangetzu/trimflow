@@ -3,6 +3,11 @@
  * Espejo de backend/src/modules/landing/landing-config.ts
  *
  * Aplica SOLO a la landing pública (`/[slug]`). No afecta a los dashboards.
+ *
+ * Los defaults por defecto de serie son «dark luxury» (ADR-015): negro carbón
+ * (asphalt/concrete) + texto marfil (bone) + dorado old-gold (neon).
+ * Los tenants con configuración guardada conservan su paleta hasta
+ * «Restaurar default» en el panel admin.
  */
 
 export interface LandingPalette {
@@ -51,12 +56,12 @@ export interface LandingConfig {
 export const LANDING_DEFAULTS: LandingConfig = {
   enabled: true,
   palette: {
-    asphalt: "#F4EBDD",
-    concrete: "#E6D9C3",
-    smoke: "#6E5E52",
-    bone: "#2B211C",
-    neon: "#6F1E23",
-    blood: "#A4161A",
+    asphalt: "#0A0A0A",
+    concrete: "#111111",
+    smoke: "#8A8178",
+    bone: "#F2EDE4",
+    neon: "#C9A227",
+    blood: "#C0392B",
   },
   typography: {
     display: "Marcellus",

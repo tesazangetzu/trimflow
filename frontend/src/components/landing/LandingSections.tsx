@@ -1,10 +1,26 @@
 import type { ReactNode } from "react"
+import Link from "next/link"
 import { Clock, MapPin, Phone, Scissors } from "lucide-react"
 import type { LandingConfig } from "@/types/landing"
 import type { PublicShop } from "@/types/public"
 import { Reveal } from "@/components/landing/Reveal"
 
 type SectionTone = "light" | "warm"
+
+/*
+ * Slots condicionales (ADR-015 §5): los datos que hoy no existen en el payload
+ * público (imagen de servicio, "MÁS ELEGIDO", especialidad de barbero) se
+ * renderizan única y exclusivamente si la fuente llega. Por defecto quedan
+ * ocultos; NO se inventa ningún dato.
+ */
+interface ServiceExtras {
+  image?: { src: string; alt?: string }
+  mostChosen?: boolean
+}
+
+interface BarberExtras {
+  specialty?: string
+}
 
 /* ── Wrappers de sección ──────────────────────────────────────────────── */
 
@@ -30,7 +46,7 @@ function Section({
       <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
         <Reveal>
           <div>
-            {/* Strop: hairline 1px + caret oxblood (ADR-014 §3) */}
+            {/* Strop: hairline 1px + caret dorado (ADR-015) */}
             <div className="landing-strop" aria-hidden />
             <p
               className="mb-2 text-xs font-semibold uppercase tracking-[0.3em]"
@@ -56,7 +72,7 @@ function Card({ children, tone, delay = 0 }: { children: ReactNode; tone: Sectio
   return (
     <Reveal delay={delay}>
       <div
-        className="relative p-5 transition-transform hover:-translate-y-1"
+        className="landing-card relative p-5 transition-transform hover:-translate-y-1"
         style={{ background: tone === "warm" ? "var(--landing-bg)" : "var(--landing-surface)" }}
       >
         {children}
@@ -67,7 +83,7 @@ function Card({ children, tone, delay = 0 }: { children: ReactNode; tone: Sectio
 
 /* ── Servicios ────────────────────────────────────────────────────────── */
 
-function ServicesSection({ shop, tone }: { shop: PublicShop; tone: SectionTone }) {
+function ServicesSection({ shop, tone, slug }: { shop: PublicShop; tone: SectionTone; slug: string }) {
   const services = shop.branches.flatMap((b) =>
     b.services.map((s) => ({ ...s, branchName: b.name })),
   )
@@ -76,41 +92,74 @@ function ServicesSection({ shop, tone }: { shop: PublicShop; tone: SectionTone }
   return (
     <Section id="servicios" kicker="SERVICIOS" title="Lo que hacemos" tone={tone}>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {services.map((s, i) => (
-          <Card key={s.id} tone={tone} delay={(i % 3) * 90}>
-            <div className="flex items-start justify-between gap-3">
-              <div
-                className="flex size-11 shrink-0 items-center justify-center"
-                style={{ border: "1px solid var(--landing-accent)" }}
-              >
-                <Scissors className="size-5 text-[var(--landing-accent)]" />
+        {services.map((s, i) => {
+          const extras = s as unknown as ServiceExtras
+          return (
+            <Card key={s.id} tone={tone} delay={(i % 3) * 90}>
+              {(extras.image?.src || extras.mostChosen) && (
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  {extras.image?.src && (
+                    <img
+                      src={extras.image.src}
+                      alt={extras.image.alt ?? ""}
+                      loading="lazy"
+                      className="h-24 w-full object-cover"
+                    />
+                  )}
+                  {extras.mostChosen && (
+                    <span
+                      className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest"
+                      style={{
+                        color: "var(--landing-bg)",
+                        background: "var(--landing-accent)",
+                        fontFamily: "var(--landing-font-mono)",
+                      }}
+                    >
+                      Más elegido
+                    </span>
+                  )}
+                </div>
+              )}
+              <div className="flex items-start justify-between gap-3">
+                <div
+                  className="flex size-11 shrink-0 items-center justify-center"
+                  style={{ border: "1px solid var(--landing-accent)" }}
+                >
+                  <Scissors className="size-5 text-[var(--landing-accent)]" />
+                </div>
+                <span
+                  className="text-lg font-semibold"
+                  style={{ color: "var(--landing-accent)", fontFamily: "var(--landing-font-mono)" }}
+                >
+                  S/ {Number(s.price).toFixed(2)}
+                </span>
               </div>
-              <span
-                className="text-lg font-semibold"
-                style={{ color: "var(--landing-accent)", fontFamily: "var(--landing-font-mono)" }}
+              <h3
+                className="mt-4 text-lg font-bold uppercase"
+                style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
               >
-                S/ {Number(s.price).toFixed(2)}
-              </span>
-            </div>
-            <h3
-              className="mt-4 text-lg font-bold uppercase"
-              style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
-            >
-              {s.name}
-            </h3>
-            {s.description && (
-              <p className="mt-1 text-sm" style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-body)" }}>
-                {s.description}
+                {s.name}
+              </h3>
+              {s.description && (
+                <p className="mt-1 text-sm" style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-body)" }}>
+                  {s.description}
+                </p>
+              )}
+              <p
+                className="mt-3 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider"
+                style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
+              >
+                <Clock className="size-3.5" /> {s.durationMinutes} min
               </p>
-            )}
-            <p
-              className="mt-3 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider"
-              style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
-            >
-              <Clock className="size-3.5" /> {s.durationMinutes} min
-            </p>
-          </Card>
-        ))}
+              <Link
+                href={`/${slug}/reservar`}
+                className="landing-card-link mt-4 px-4 py-2 text-xs font-bold uppercase tracking-widest"
+              >
+                Reservar
+              </Link>
+            </Card>
+          )
+        })}
       </div>
     </Section>
   )
@@ -118,7 +167,7 @@ function ServicesSection({ shop, tone }: { shop: PublicShop; tone: SectionTone }
 
 /* ── Barberos ─────────────────────────────────────────────────────────── */
 
-function BarbersSection({ shop, tone }: { shop: PublicShop; tone: SectionTone }) {
+function BarbersSection({ shop, tone, slug }: { shop: PublicShop; tone: SectionTone; slug: string }) {
   const barbers = shop.branches.flatMap((b) =>
     b.barbers.map((bar) => ({ ...bar, branchName: b.name })),
   )
@@ -135,27 +184,50 @@ function BarbersSection({ shop, tone }: { shop: PublicShop; tone: SectionTone })
   return (
     <Section id="equipo" kicker="EL EQUIPO" title="Nuestros barbers" tone={tone}>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {barbers.map((barber, i) => (
-          <Card key={barber.id} tone={tone} delay={(i % 4) * 90}>
-            <div
-              className="mx-auto flex size-16 items-center justify-center rounded-full text-xl font-bold"
-              style={{
-                border: "1px solid var(--landing-accent)",
-                color: "var(--landing-accent)",
-                background: "var(--landing-bg)",
-                fontFamily: "var(--landing-font-mono)",
-              }}
-            >
-              {initials(barber.name)}
-            </div>
-            <h3
-              className="mt-4 text-center text-base font-bold uppercase"
-              style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
-            >
-              {barber.name}
-            </h3>
-          </Card>
-        ))}
+        {barbers.map((barber, i) => {
+          const extras = barber as unknown as BarberExtras
+          return (
+            <Card key={barber.id} tone={tone} delay={(i % 4) * 90}>
+              <div
+                className="mx-auto flex size-16 items-center justify-center rounded-full text-xl font-bold"
+                style={{
+                  border: "1px solid var(--landing-accent)",
+                  color: "var(--landing-accent)",
+                  background: "var(--landing-bg)",
+                  fontFamily: "var(--landing-font-mono)",
+                }}
+              >
+                {initials(barber.name)}
+              </div>
+              <h3
+                className="mt-4 text-center text-base font-bold uppercase"
+                style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
+              >
+                {barber.name}
+              </h3>
+              {extras.specialty && (
+                <span
+                  className="mx-auto mt-2 block w-fit px-2 py-1 text-[10px] font-bold uppercase tracking-widest"
+                  style={{
+                    color: "var(--landing-accent)",
+                    border: "1px solid var(--landing-accent)",
+                    fontFamily: "var(--landing-font-mono)",
+                  }}
+                >
+                  {extras.specialty}
+                </span>
+              )}
+              <div className="mt-4 text-center">
+                <Link
+                  href={`/${slug}/reservar`}
+                  className="landing-card-link px-4 py-2 text-xs font-bold uppercase tracking-widest"
+                >
+                  Reservar
+                </Link>
+              </div>
+            </Card>
+          )
+        })}
       </div>
     </Section>
   )
@@ -189,7 +261,7 @@ function ScheduleSection({ shop, tone }: { shop: PublicShop; tone: SectionTone }
               className="mt-1 text-xs uppercase tracking-wider"
               style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
             >
-              Lunes a Domingo · Reserva con antelación
+              Reserva con antelación
             </p>
           </Card>
         ))}
@@ -242,11 +314,19 @@ function LocationSection({ shop, tone }: { shop: PublicShop; tone: SectionTone }
 
 /* ── Export principal ─────────────────────────────────────────────────── */
 
-export function LandingSections({ shop, config }: { shop: PublicShop; config: LandingConfig }) {
+export function LandingSections({
+  shop,
+  config,
+  slug,
+}: {
+  shop: PublicShop
+  config: LandingConfig
+  slug: string
+}) {
   return (
     <>
-      {config.sections.services && <ServicesSection shop={shop} tone="light" />}
-      {config.sections.barbers && <BarbersSection shop={shop} tone="warm" />}
+      {config.sections.services && <ServicesSection shop={shop} tone="light" slug={slug} />}
+      {config.sections.barbers && <BarbersSection shop={shop} tone="warm" slug={slug} />}
       {config.sections.schedule && <ScheduleSection shop={shop} tone="light" />}
       {config.sections.location && <LocationSection shop={shop} tone="warm" />}
     </>

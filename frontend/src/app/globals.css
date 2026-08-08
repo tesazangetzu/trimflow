@@ -267,9 +267,91 @@
   }
 }
 
-/* ── Landing pública (estilo urbano/street) ──
-   Estas animaciones solo las usa la landing `/[slug]`. No afectan al dashboard. */
+/* ── Landing pública («Umbral de tinta + libro de cuentas», ADR-014) ──
+   Estas animaciones/estilos solo los usa la landing `/[slug]` y `/[slug]/reservar`.
+   No afectan al dashboard. */
+
+.landing-page {
+  scroll-behavior: smooth;
+}
+
 @keyframes landing-marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-33.333%); }
+}
+
+/* Strop: hairline de 1px + caret oxblood corto al inicio (divisor de sección). */
+.landing-strop {
+  position: relative;
+  margin-bottom: 1.75rem;
+  padding-top: 1.25rem;
+}
+.landing-strop::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--landing-fg);
+  opacity: 0.18;
+}
+.landing-strop::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  background: var(--landing-accent);
+  clip-path: polygon(0 0, 0% 100%, 100% 50%);
+}
+
+/* Barber-pole: franja tricolor (oxblood / tan / marfil). Firma visual (ADR-014). */
+.landing-pole {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--landing-accent) 0 4px,
+    var(--landing-surface) 4px 8px,
+    var(--landing-bg) 8px 12px
+  );
+}
+
+/* Scroll reveal (IntersectionObserver, Fase 4). */
+.landing-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.landing-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero stagger (fade + rise). */
+.landing-hero-block {
+  opacity: 0;
+}
+.landing-hero.is-ready .landing-hero-block {
+  animation: landing-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes landing-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-page {
+    scroll-behavior: auto;
+  }
+  .landing-reveal {
+    transition: none;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .landing-hero.is-ready .landing-hero-block,
+  .landing-hero .landing-hero-block {
+    animation: none;
+    opacity: 1;
+  }
 }

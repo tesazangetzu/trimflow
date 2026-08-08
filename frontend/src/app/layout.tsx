@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Poppins, Archivo, Space_Grotesk } from "next/font/google"
+import { Poppins, Marcellus, Spectral, IBM_Plex_Mono } from "next/font/google"
 import "./globals.css"
 import { Providers } from "./providers"
 
@@ -9,17 +9,24 @@ const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700", "800"],
 })
 
-// Fuentes de la landing pública (estilo urbano/street). Solo se usan en `/[slug]`.
-const archivo = Archivo({
-  variable: "--font-archivo",
+// Fuentes de la landing pública («Umbral de tinta + libro de cuentas», ADR-014).
+// Solo se usan en `/[slug]` y `/[slug]/reservar`.
+const marcellus = Marcellus({
+  variable: "--font-marcellus",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800", "900"],
+  weight: ["400"],
 })
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const spectral = Spectral({
+  variable: "--font-spectral",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
+})
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 })
 
 export const metadata: Metadata = {
@@ -36,7 +43,7 @@ export default function RootLayout({
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${poppins.variable} ${archivo.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${poppins.variable} ${marcellus.variable} ${spectral.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" style={{ fontFamily: "'Poppins', system-ui, sans-serif" }}>
         <Providers>{children}</Providers>

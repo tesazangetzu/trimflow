@@ -2,7 +2,8 @@
  * Configuración de la landing pública por tenant.
  *
  * La configuración se guarda en `Tenant.settings.landing` (JSONB) y se fusiona
- * sobre estos defaults. La estética por defecto es urbana/street.
+ * sobre estos defaults. La estética por defecto es «Umbral de tinta + libro de
+ * cuentas» (ADR-014): hero tinta + páginas marfil.
  *
  * IMPORTANTE: esta configuración aplica SOLO a la landing pública (`/[slug]`).
  * No afecta a los dashboards (admin/barber/super-admin), que conservan su tema.
@@ -68,27 +69,27 @@ export interface LandingConfig {
 export const LANDING_DEFAULTS: LandingConfig = {
   enabled: true,
   palette: {
-    asphalt: '#16181A',
-    concrete: '#232629',
-    smoke: '#9AA0A6',
-    bone: '#F2EFE9',
-    neon: '#FFB300',
-    blood: '#E5484D',
+    asphalt: '#F4EBDD',
+    concrete: '#E6D9C3',
+    smoke: '#6E5E52',
+    bone: '#2B211C',
+    neon: '#6F1E23',
+    blood: '#A4161A',
   },
   typography: {
-    display: 'Archivo',
-    body: 'Space Grotesk',
+    display: 'Marcellus',
+    body: 'Spectral',
   },
   branding: {
     logoUrl: null,
     heroImageUrl: null,
   },
   presentation: {
-    tagline: 'BARBERÍA · ESTILO URBANO',
+    tagline: 'BARBERÍA · CLÁSICA',
     heroTitle: '',
     heroSubtitle:
       'Cortes de precisión, barbas definidas y estilo que habla por ti. Reserva tu cita en segundos.',
-    tickerItems: ['CORTES', 'BARBAS', 'ESTILO', 'RESERVA', 'FRESH'],
+    tickerItems: ['CORTES', 'BARBAS', 'ESTILO', 'RESERVA'],
   },
   sections: {
     services: true,

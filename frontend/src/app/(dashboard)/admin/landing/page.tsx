@@ -312,9 +312,9 @@ export default function LandingPage() {
                   onChange={(e) =>
                     patch("typography", { ...config.typography, display: e.target.value })
                   }
-                  placeholder="Archivo"
+                  placeholder="Marcellus"
                 />
-                <p className="text-xs text-muted-foreground">Disponibles: Archivo, Space Grotesk, Poppins</p>
+                <p className="text-xs text-muted-foreground">Disponibles: Marcellus, Spectral, Poppins</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="fontBody">Fuente body (texto)</Label>
@@ -324,7 +324,7 @@ export default function LandingPage() {
                   onChange={(e) =>
                     patch("typography", { ...config.typography, body: e.target.value })
                   }
-                  placeholder="Space Grotesk"
+                  placeholder="Spectral"
                 />
               </div>
             </div>

@@ -99,3 +99,11 @@ El payload público de la landing, `GET /v1/public/:slug`, devuelve `landing: me
 - **Backend** (`backend/src/modules/landing/`): `landing-config.ts` (interfaces + `LANDING_DEFAULTS` + `mergeLandingConfig`), `landing.module.ts`, `controllers/landing.controller.ts` (GET/PUT protegidos JWT+RBAC admin), `services/landing.service.ts` (persistencia en `Tenant.settings.landing`), `dto/update-landing-config.dto.ts` (DTO parcial). Se registra `LandingModule` en `app.module.ts`.
 - **Frontend**: `types/landing.ts`, `services/landing.service.ts`, página `app/(dashboard)/admin/landing/page.tsx`, ítem "Landing" en `components/layouts/nav-config.tsx`, consumo en `components/landing/*` (LandingPage/Hero/Sections + `landing-theme.ts`), tipos `types/public.ts` (`PublicShop.landing`), página `app/[slug]/page.tsx` y `components/booking/BookingWizard.tsx` (prop `shop`), fuentes Archivo/Space Grotesk en `app/layout.tsx`, keyframes `landing-marquee` en `app/globals.css`.
 - No se requiere migración de DB (reutiliza `Tenant.settings` JSONB).
+
+---
+
+## Actualización 2026-08-07
+
+Los **valores por defecto** de la paleta y la tipografía de la landing cambiaron con la nueva identidad visual (`LANDING_DEFAULTS` y su espejo frontend `types/landing.ts`: nueva paleta marfil/tan/tinta/oxblood y fuentes Marcellus/Spectral/IBM Plex Mono). Ver **ADR-014**.
+
+El **mecanismo de ADR-013 permanece intacto**: la personalización sigue persistiendo en `Tenant.settings.landing` (JSONB) y fusionándose sobre los nuevos defaults con `mergeLandingConfig`; la estética sigue aislándose a `/[slug]` por CSS variables de scope local vía `landingThemeVars`. Los tenants con config guardada **conservan su paleta/fuentes** hasta pulsar "Restaurar default" en `/admin/landing` (entonces heredan la nueva identidad). Sin cambios de contrato API ni migración de DB.

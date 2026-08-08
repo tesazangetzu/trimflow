@@ -15,16 +15,18 @@ export function landingThemeVars(config: LandingConfig): CSSProperties {
     "--landing-danger": config.palette.blood,
     "--landing-font-display": fontFamily(config.typography.display),
     "--landing-font-body": fontFamily(config.typography.body),
+    "--landing-font-mono": "var(--font-plex-mono), monospace",
+    "--landing-hero-bg": "#14100E",
+    "--landing-hero-fg": "#F3EBDD",
+    "--landing-hero-muted": "#B9AB97",
   } as CSSProperties
 }
 
 /** Mapea el nombre de fuente elegido a la variable de next/font cargada. */
 function fontFamily(name: string): string {
   const n = name.trim().toLowerCase()
-  if (n.includes("archivo")) return "var(--font-archivo), sans-serif"
-  if (n.includes("space grotesk") || n.includes("space_grotesk")) {
-    return "var(--font-space-grotesk), sans-serif"
-  }
+  if (n.includes("marcellus")) return "var(--font-marcellus), serif"
+  if (n.includes("spectral")) return "var(--font-spectral), serif"
   if (n.includes("poppins")) return "var(--font-poppins), sans-serif"
   // Fuente personalizada no cargada: fallback genérico
   return `'${name}', system-ui, sans-serif`

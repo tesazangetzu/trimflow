@@ -109,3 +109,9 @@ Decisión de comportamiento al crear/editar un `Tenant`:
 - Backend: servicio de creación de cita que hace **upsert de Customer** (lookup por email+branch y creación si no existe) antes de crear el `Appointment`.
 - Frontend: rutas `/barberia-el-clasico` (página catch-all por slug) con el flujo en 4 pasos + autocompletado por email desde el lookup público.
 - Migración de DB para `Schedule.breakStartTime`/`breakEndTime` (ver ADR-011).
+
+---
+
+## Actualización 2026-08-07
+
+La landing pública `/[slug]` se rediseñó con una nueva identidad visual y se **separó el formulario de reserva a una vista propia `/[slug]/reservar`** (patrón del proyecto de referencia). El `BookingWizard` ya **no se embebe en la landing** `/[slug]` (lo que causaba salto de scroll): la landing muestra **solo información de la barbería** (Servicios, Equipo, Horarios, Ubicación) con un CTA de navegación a `/[slug]/reservar` desde el sticky nav y el CTA band. La lógica de reserva, endpoints `/v1/public/:slug` y el cálculo de disponibilidad descritos arriba permanecen intactos; solo cambia la ubicación/estructura de presentación en el frontend. Ver **ADR-014** para la identidad visual nueva.

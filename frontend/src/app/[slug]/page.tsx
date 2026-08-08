@@ -9,16 +9,16 @@ export default function PublicShopPage({
   params: Promise<{ slug: string }>
 }) {
   return (
-    <main className="min-h-screen bg-[#16181A]">
+    <main className="min-h-screen bg-[#F4EBDD]">
       <Suspense
         fallback={
           <div
             className="flex min-h-screen items-center justify-center"
-            style={{ background: "#16181A" }}
+            style={{ background: "#F4EBDD" }}
           >
             <div className="animate-pulse text-center">
-              <div className="mx-auto mb-4 h-3 w-40 border-2 border-[#FFB300]" />
-              <div className="h-12 w-64 bg-[#232629]" />
+              <div className="mx-auto mb-4 h-3 w-40 border-2 border-[#6F1E23]" />
+              <div className="h-12 w-64 bg-[#E6D9C3]" />
             </div>
           </div>
         }

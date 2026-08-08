@@ -93,6 +93,36 @@ supera la RAM disponible (7.4 GiB) y empuja al sistema a usar swap de forma inte
 
 ---
 
+## Acciones tomadas (2026-08-07 ~19:39)
+
+1. **Detenido `next-server`** (dev, 1.2 GiB) — liberado con SIGKILL.
+2. **`nest start --watch` NO pudo detenerse** — corre como root y requiere contraseña sudo. **Pendiente: detenerlo manualmente** (`sudo kill 911` o `sudo pkill -f "nest start"`).
+3. **Commit del trabajo pendiente:** `ec78254 wip: landing pública con reservas (ADR-012/013/014) + reporte incidencia cuelgues IDE` (22 archivos, +1024/-215).
+4. **Graphify actualizado** tras el commit (3276 nodos, 5676 edges).
+
+### Resultado de la liberación de memoria
+
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| RAM usada | 3.9 GiB | 2.7 GiB |
+| RAM disponible | 3.5 GiB | 4.7 GiB |
+| Swap usado | 1.6 GiB (80%) | 626 MiB (30%) |
+| Load 1 min | 4.53 | 0.88 |
+
+---
+
+## Estrategia de trabajo para reducir consumo de recursos
+
+Ajustes acordados con el programador para evitar futuros cuelgues:
+
+1. **Commits frecuentes:** commitear al final de cada unidad de trabajo completada (no esperar al final del ciclo completo).
+2. **Dividir el trabajo en piezas pequeñas:** cada iteración del ciclo debe apuntar a un objetivo acotado (una feature, un módulo, un fix), no a múltiples frentes simultáneos.
+3. **No levantar servicios innecesarios:** backend (`nest start --watch`) y frontend (`next-server`) solo cuando se necesiten para verificar; detenerlos al terminar.
+4. **Evitar exploraciones masivas:** usar Graphify/Serena para consultas dirigidas en lugar de lecturas completas de archivos (reduce contexto y memoria).
+5. **Monitorear antes de sesiones largas:** `free -h` y `uptime` al inicio; si el swap supera el 50%, detener servicios antes de continuar.
+
+---
+
 ## Estado del trabajo al momento del cierre
 
 - **Último commit:** `d54f91e docs: reporte técnico final del ciclo commit ADR-013 + tests break`

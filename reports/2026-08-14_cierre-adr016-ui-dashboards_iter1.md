@@ -64,4 +64,53 @@ Cerrar el ciclo del ADR-016 (commit atómico de todo el trabajo pendiente + corr
 
 ## Puntos Auditados
 
-> Sección reservada para el Auditor (se deja vacía).
+> **Auditado:** 2026-08-14 19:25 (UTC-5)
+> **Auditor:** Agente Auditor
+> **Veredicto global:** APROBADO CON OBSERVACIONES
+> **Fuente de verdad:** .docs/ (requirements → architecture → decisions → plan → código)
+> **Commits analizados:** 6 commits · `144304a` → `95f2c1b`
+
+---
+
+### Criterios auditados
+
+| # | Nivel | Criterio | Fuente en .docs | Veredicto | Commits afectados |
+|---|-------|----------|-----------------|-----------|-------------------|
+| 1 | Requirements | `mvp-scope.md` marcó `[x]` los 8 items de ADR-012 y 8 de ADR-013 | `requirements/mvp-scope.md` | [✓] | `144304a` |
+| 2 | Requirements | El botón eliminar en las 4 tablas admin invoca endpoints DELETE existentes (`branches/barbers` = super-admin; `services/customers` = super-admin+admin) | `requirements/mvp-scope.md`, código backend | [✓] | `c39d276` |
+| 3 | Architecture | Patrón módulo compartido respetado (services `.remove()` + `useToastManager` + `Dialog`), dashboard-shell compartido sin cambio | `architecture/modules.md` | [✓] | `c39d276`, `1a5d7e0` |
+| 4 | Decisions | ADR-007 respetado: dark mode vía **next-themes**, ahora con botón cíclico (light→dark→system) | `decisions/ADR-007*.md` | [✓] | `f474fd1` |
+| 5 | Decisions | ADR-016 respetado: cero cambios en BookingWizard / reservas / contratos públicos / schema | `decisions/ADR-016*.md` | [✓] | todos |
+| 6 | Decisions | ADR-015 (dark luxury landing) no regresiona: se conservan tokens y estructura editorial | `decisions/ADR-015*.md` | [✓] | `1a5d7e0` |
+| 7 | Plan | Fase 1: Commit A con árbol de trabajo completo del ADR-016 + FINAL a 2 iteraciones + checklist | plan | [✓] | `144304a` |
+| 8 | Plan | Fase 2: `ModeToggle` reescrito como botón cíclico, sin `DropdownMenu`, iconos Sun/Moon/Monitor | plan | [✓] | `f474fd1` |
+| 9 | Plan | Fase 3: `Trash2` + Dialog confirm + toast en branches/barbers/services/customers | plan | [✓] | `c39d276` |
+| 10 | Plan | Fase 3: ícono `Ban` en super-admin (tenants + dashboard) reemplazando Lock/Unlock | plan | [✓] | `6aefae8` |
+| 11 | Plan | Fase 4: deuda BAJA (eslint backend, CTA_LABEL, next/image, TICKER_FALLBACK, scroll-hint) | plan + FINAL §Deuda | [✓] | `1a5d7e0` |
+| 12 | Plan | Fase 5: `graphify update` + FINAL deuda 1-6 resuelto + `git status` limpio + QA runtime | plan | [✓] | `95f2c1b` |
+| 13 | Código | Sin tipos `any` nuevos, sin hardcode nuevo, sin imports inconsistentes | código en src/ | [✓] | todos |
+| 14 | Código | Errores de red/RBAC manejados con toast en delete; estado `deleting` previene doble submit | código en src/ | [✓] | `c39d276` |
+| 15 | Código | `git status` limpio al terminar | git | [✓] | `95f2c1b` |
+
+---
+
+### Detalle de fallas
+
+**OBSERVACIÓN [!] · severidad BAJA · `1a5d7e0` (LandingHero.tsx)**
+La migración de `<img onError>` a `next/image` (deuda #3) **eliminó el handler `onError`** que ocultaba la imagen fallida. Con `unoptimized`, una `heroImageUrl` rota/offline ahora renderizaría el icono de imagen rota en lugar de ocultarse en silencio. Se detectó un cambio de comportamiento no documentado en el FINAL; severidad BAJA y acotado a la landing (fuera de alcance de este ciclo). No viola un ADR, es documentación de comportamiento faltante.
+
+**OBSERVACIÓN [!] · severidad BAJA · `95f2c1b`**
+El commit de cierre documental `95f2c1b` no figura en el plan original de 14 pasos (incluye snapshots QA + reporte de ejecución). El desvío está **explícitamente documentado** en la sección "Incidentes y desvíos" (fila "Versionado"). Desviación menor no crítica.
+
+---
+
+### Resumen ejecutivo
+
+**Total de criterios evaluados:** 15
+**Aprobados:** 13 [✓]
+**Con observaciones:** 2 [!]
+**Fallidos:** 0 [✗]
+**Acción requerida:** Ninguna bloqueante. Registrar en el FINAL del ADR-016 la pérdida del `onError` del hero al migrar a `next/image` (o reintroducir un manejo de error de imagen) como deuda BAJA. El commit `95f2c1b` queda formalmente aceptado como commit de cierre documental.
+**Deuda técnica identificada:**
+- Hero `next/image` sin fallback en imagen rota (BAJA, `LandingHero.tsx`).
+- (Resueltas en este ciclo): lint backend ejecutable, `CTA_LABEL` único, `next/image`, `TICKER_FALLBACK` eliminado, cascada scroll-hint, verificación QA runtime. Restan errores `any`/unused de lint backend preexistentes (fuera de alcance).

@@ -2,8 +2,7 @@
 
 import Link from "next/link"
 import { Reveal } from "@/components/landing/Reveal"
-
-const CTA_LABEL = "RESERVAR CITA"
+import { CTA_LABEL } from "@/components/landing/landing-text"
 
 interface LandingCtaProps {
   slug: string

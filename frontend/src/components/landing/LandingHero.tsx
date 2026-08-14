@@ -1,14 +1,15 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useRef } from "react"
 import type { CSSProperties } from "react"
 import { ChevronDown } from "lucide-react"
 import type { LandingConfig } from "@/types/landing"
+import { LANDING_DEFAULTS } from "@/types/landing"
+import { CTA_LABEL } from "@/components/landing/landing-text"
 
-const CTA_PRIMARY = "RESERVAR CITA"
 const CTA_SECONDARY = "VER SERVICIOS"
-const TICKER_FALLBACK = ["CORTES", "BARBAS", "ESTILO", "RESERVA"]
 
 interface LandingHeroProps {
   slug: string
@@ -23,7 +24,7 @@ export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }:
   const { presentation, branding } = config
   const ticker = presentation.tickerItems?.length
     ? presentation.tickerItems
-    : TICKER_FALLBACK
+    : LANDING_DEFAULTS.presentation.tickerItems
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
@@ -40,13 +41,14 @@ export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }:
       {/* Imagen de fondo (opcional): full-bleed velada + scrim hacia --landing-bg */}
       {hasHeroImage && branding.heroImageUrl && (
         <div className="pointer-events-none absolute inset-0">
-          <img
+          <Image
             src={branding.heroImageUrl}
             alt=""
-            className="h-full w-full object-cover opacity-35"
-            onError={(e) => {
-              ;(e.target as HTMLImageElement).style.display = "none"
-            }}
+            fill
+            unoptimized={true}
+            className="object-cover opacity-35"
+            sizes="100vw"
+            priority
           />
           <div
             className="absolute inset-0"
@@ -109,7 +111,7 @@ export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }:
               fontFamily: "var(--landing-font-display)",
             }}
           >
-            {CTA_PRIMARY}
+            {CTA_LABEL}
           </Link>
           <a
             href="#servicios"

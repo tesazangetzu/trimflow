@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
 import { useActiveSection } from "@/hooks/landing/use-active-section"
+import { CTA_LABEL } from "@/components/landing/landing-text"
 
 const NAV_LINKS = [
   { id: "servicios", label: "Servicios" },
@@ -11,8 +12,6 @@ const NAV_LINKS = [
   { id: "horarios", label: "Horarios" },
   { id: "ubicacion", label: "Ubicación" },
 ]
-
-const NAV_CTA = "RESERVAR CITA"
 
 interface LandingNavProps {
   slug: string
@@ -102,7 +101,7 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
               style={{ background: "var(--landing-fg)" }}
               aria-hidden
             />
-            <span className="relative">{NAV_CTA}</span>
+            <span className="relative">{CTA_LABEL}</span>
           </Link>
           <button
             type="button"
@@ -150,7 +149,7 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
                 fontFamily: "var(--landing-font-display)",
               }}
             >
-              {NAV_CTA}
+              {CTA_LABEL}
             </Link>
           </div>
         </div>

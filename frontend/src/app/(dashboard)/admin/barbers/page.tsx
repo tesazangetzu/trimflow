@@ -1,9 +1,17 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { UserCog, Plus, Mail, Phone, Pencil } from "lucide-react"
+import { UserCog, Plus, Mail, Phone, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Table,
   TableBody,
@@ -20,14 +28,18 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { SkeletonTable } from "@/components/ui/skeleton-patterns"
 import { BarberFormDialog } from "@/components/barbers/barber-form-dialog"
+import { useToastManager } from "@/components/ui/toast"
 import * as barbersService from "@/services/barbers.service"
 import type { Barber } from "@/types/barber"
 
 export default function BarbersPage() {
+  const { add } = useToastManager()
   const [barbers, setBarbers] = useState<Barber[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Barber | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Barber | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     barbersService
@@ -35,6 +47,28 @@ export default function BarbersPage() {
       .then(setBarbers)
       .finally(() => setLoading(false))
   }, [])
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await barbersService.remove(deleteTarget.id)
+      setBarbers((prev) => prev.filter((b) => b.id !== deleteTarget.id))
+      setDeleteTarget(null)
+      add({
+        title: "Barber eliminado",
+        description: `"${deleteTarget.name}" fue eliminado.`,
+        type: "success",
+      })
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        (err instanceof Error ? err.message : "No se pudo eliminar el barber.")
+      add({ title: "Error al eliminar", description: msg, type: "error" })
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -110,26 +144,44 @@ export default function BarbersPage() {
                         </div>
                       </TableCell>
                       <TableCell className="py-3 text-right">
-                        <Tooltip>
-                          <TooltipTrigger
-                            render={
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                className="text-muted-foreground hover:text-foreground"
-                                aria-label="Editar barber"
-                                onClick={() => {
-                                  setEditing(barber)
-                                  setDialogOpen(true)
-                                }}
-                              >
-                                <Pencil className="size-4" />
-                              </Button>
-                            }
-                          />
-                          <TooltipContent>Editar</TooltipContent>
-                        </Tooltip>
-                      </TableCell>
+                          <div className="flex justify-end gap-1">
+                            <Tooltip>
+                              <TooltipTrigger
+                                render={
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    className="text-muted-foreground hover:text-foreground"
+                                    aria-label="Editar barber"
+                                    onClick={() => {
+                                      setEditing(barber)
+                                      setDialogOpen(true)
+                                    }}
+                                  >
+                                    <Pencil className="size-4" />
+                                  </Button>
+                                }
+                              />
+                              <TooltipContent>Editar</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger
+                                render={
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    className="text-muted-foreground hover:text-destructive"
+                                    aria-label="Eliminar barber"
+                                    onClick={() => setDeleteTarget(barber)}
+                                  >
+                                    <Trash2 className="size-4" />
+                                  </Button>
+                                }
+                              />
+                              <TooltipContent>Eliminar</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TableCell>
                     </TableRow>
                   )
                 })}
@@ -151,6 +203,30 @@ export default function BarbersPage() {
           setBarbers((prev) => prev.map((i) => (i.id === u.id ? u : i)))
         }
       />
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md shadow-dialog">
+          <DialogHeader>
+            <DialogTitle>¿Eliminar barber?</DialogTitle>
+            <DialogDescription>
+              Esta acción eliminará «{deleteTarget?.name}». No se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="gap-2">
+              <Trash2 className="size-4" />
+              {deleting ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

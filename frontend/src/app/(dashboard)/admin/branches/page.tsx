@@ -11,16 +11,28 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { SkeletonTable } from "@/components/ui/skeleton-patterns"
-import { Store, Plus, MapPin, Pencil } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Store, Plus, MapPin, Pencil, Trash2 } from "lucide-react"
 import { BranchFormDialog } from "@/components/branches/branch-form-dialog"
+import { useToastManager } from "@/components/ui/toast"
 import * as branchesService from "@/services/branches.service"
 import type { Branch } from "@/types/branch"
 
 export default function BranchesPage() {
+  const { add } = useToastManager()
   const [branches, setBranches] = useState<Branch[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Branch | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Branch | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     branchesService
@@ -28,6 +40,28 @@ export default function BranchesPage() {
       .then(setBranches)
       .finally(() => setLoading(false))
   }, [])
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await branchesService.remove(deleteTarget.id)
+      setBranches((prev) => prev.filter((b) => b.id !== deleteTarget.id))
+      setDeleteTarget(null)
+      add({
+        title: "Sucursal eliminada",
+        description: `"${deleteTarget.name}" fue eliminada.`,
+        type: "success",
+      })
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        (err instanceof Error ? err.message : "No se pudo eliminar la sucursal.")
+      add({ title: "Error al eliminar", description: msg, type: "error" })
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -97,25 +131,43 @@ export default function BranchesPage() {
                       )}
                     </TableCell>
                     <TableCell className="py-3 text-right">
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="text-muted-foreground hover:text-foreground"
-                              aria-label="Editar sucursal"
-                              onClick={() => {
-                                setEditing(branch)
-                                setDialogOpen(true)
-                              }}
-                            >
-                              <Pencil className="size-4" />
-                            </Button>
-                          }
-                        />
-                        <TooltipContent>Editar</TooltipContent>
-                      </Tooltip>
+                      <div className="flex justify-end gap-1">
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                className="text-muted-foreground hover:text-foreground"
+                                aria-label="Editar sucursal"
+                                onClick={() => {
+                                  setEditing(branch)
+                                  setDialogOpen(true)
+                                }}
+                              >
+                                <Pencil className="size-4" />
+                              </Button>
+                            }
+                          />
+                          <TooltipContent>Editar</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                className="text-muted-foreground hover:text-destructive"
+                                aria-label="Eliminar sucursal"
+                                onClick={() => setDeleteTarget(branch)}
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
+                            }
+                          />
+                          <TooltipContent>Eliminar</TooltipContent>
+                        </Tooltip>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -137,6 +189,30 @@ export default function BranchesPage() {
           setBranches((prev) => prev.map((i) => (i.id === u.id ? u : i)))
         }
       />
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md shadow-dialog">
+          <DialogHeader>
+            <DialogTitle>¿Eliminar sucursal?</DialogTitle>
+            <DialogDescription>
+              Esta acción eliminará «{deleteTarget?.name}». No se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="gap-2">
+              <Trash2 className="size-4" />
+              {deleting ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

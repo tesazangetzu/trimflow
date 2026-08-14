@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Clock, Pencil, Scissors } from "lucide-react"
+import { Plus, Clock, Pencil, Scissors, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,17 +18,29 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { SkeletonTable } from "@/components/ui/skeleton-patterns"
 import { ServiceFormDialog } from "@/components/services/service-form-dialog"
 import { formatCurrency } from "@/components/dashboard/chart-tools"
+import { useToastManager } from "@/components/ui/toast"
 import * as servicesService from "@/services/service-offering.service"
 import type { Service } from "@/types/service"
 
 export default function ServicesPage() {
+  const { add } = useToastManager()
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Service | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Service | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     servicesService
@@ -36,6 +48,28 @@ export default function ServicesPage() {
       .then(setServices)
       .finally(() => setLoading(false))
   }, [])
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await servicesService.remove(deleteTarget.id)
+      setServices((prev) => prev.filter((s) => s.id !== deleteTarget.id))
+      setDeleteTarget(null)
+      add({
+        title: "Servicio eliminado",
+        description: `"${deleteTarget.name}" fue eliminado.`,
+        type: "success",
+      })
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        (err instanceof Error ? err.message : "No se pudo eliminar el servicio.")
+      add({ title: "Error al eliminar", description: msg, type: "error" })
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -103,25 +137,43 @@ export default function ServicesPage() {
                       </div>
                     </TableCell>
                     <TableCell className="py-3 text-right">
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="text-muted-foreground hover:text-foreground"
-                              aria-label="Editar servicio"
-                              onClick={() => {
-                                setEditing(service)
-                                setDialogOpen(true)
-                              }}
-                            >
-                              <Pencil className="size-4" />
-                            </Button>
-                          }
-                        />
-                        <TooltipContent>Editar</TooltipContent>
-                      </Tooltip>
+                      <div className="flex justify-end gap-1">
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                className="text-muted-foreground hover:text-foreground"
+                                aria-label="Editar servicio"
+                                onClick={() => {
+                                  setEditing(service)
+                                  setDialogOpen(true)
+                                }}
+                              >
+                                <Pencil className="size-4" />
+                              </Button>
+                            }
+                          />
+                          <TooltipContent>Editar</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                className="text-muted-foreground hover:text-destructive"
+                                aria-label="Eliminar servicio"
+                                onClick={() => setDeleteTarget(service)}
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
+                            }
+                          />
+                          <TooltipContent>Eliminar</TooltipContent>
+                        </Tooltip>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -143,6 +195,30 @@ export default function ServicesPage() {
           setServices((prev) => prev.map((i) => (i.id === u.id ? u : i)))
         }
       />
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md shadow-dialog">
+          <DialogHeader>
+            <DialogTitle>¿Eliminar servicio?</DialogTitle>
+            <DialogDescription>
+              Esta acción eliminará «{deleteTarget?.name}». No se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="gap-2">
+              <Trash2 className="size-4" />
+              {deleting ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

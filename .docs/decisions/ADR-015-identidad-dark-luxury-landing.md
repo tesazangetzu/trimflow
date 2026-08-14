@@ -162,3 +162,9 @@ La clase `.landing-pole` se redefine (gradiente dorado/charcoal) en `globals.css
 - **`app/globals.css`**: redefinir `.landing-pole` (dorado), `.landing-strop` caret dorado, reskin del marquee, keyframe del indicador de scroll, estilos navbar (scroll/transición/hamburger).
 - **`app/layout.tsx`**: sin cambios (se MANTIENEN Marcellus/Spectral/IBM Plex Mono, Decisión §2).
 - **`app/(dashboard)/admin/landing/page.tsx`**: sin cambios de esquema; los color pickers simplemente mostrarán los hexes dark por defecto.
+
+---
+
+## Actualización 2026-08-08
+
+La **composición de secciones** definida en el ADR-015 (grid de tarjetas de servicios, equipo con avatares circulares/iniciales y CTA band anterior con múltiples botones RESERVAR repartidos) **se sustituye** por la **composición editorial de 8 secciones** del **ADR-016** (reconstrucción editorial de la landing pública `/[slug]`): HERO → INTRO → SERVICIOS → EQUIPO → EXPERIENCIA → HORARIOS+UBICACIÓN → CTA FINAL → FOOTER, con lista editorial numerada, hairlines y uso moderado del dorado. Los **colores de la marca NO cambian**: la paleta negro carbón / marfil / dorado old-gold (`#0A0A0A` / `#111111` / `#F2EDE4` / `#8A8178` / `#C9A227` / `#C0392B`), las fuentes Marcellus/Spectral/IBM Plex Mono y las vars derivadas se mantienen intactas. El ADR-015 **se mantiene como decisión de identidad**; el ADR-016 añade la capa estructural reutilizando sus tokens. Ver **ADR-016**.

@@ -51,25 +51,25 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 
 ### Landing pública de reservas (ver ADR-012)
 
-- [ ] Self-service por slug: `GET /v1/public/:slug` (metadatos de la barbería).
-- [ ] Cálculo de disponibilidad pública: `GET /v1/public/:slug/availability`.
-- [ ] Lookup de cliente por email: `POST /v1/public/:slug/customers/lookup` (autocompletar).
-- [ ] Creación de reserva sin registro: `POST /v1/public/:slug/appointments`.
-- [ ] Flujo frontend en 4 pasos: servicio → barbero → fecha/hora → datos del cliente → confirmación.
-- [ ] Sólo se muestran horarios disponibles; los pasados aparecen bloqueados (no seleccionables).
-- [ ] Email obligatorio del cliente (confirmación por email; sin WhatsApp/SMS en MVP).
-- [ ] Slug auto-generado del nombre (slugify) con sufijo único en colisión y campo editable opcional (requisito admin).
+- [x] Self-service por slug: `GET /v1/public/:slug` (metadatos de la barbería).
+- [x] Cálculo de disponibilidad pública: `GET /v1/public/:slug/availability`.
+- [x] Lookup de cliente por email: `POST /v1/public/:slug/customers/lookup` (autocompletar).
+- [x] Creación de reserva sin registro: `POST /v1/public/:slug/appointments`.
+- [x] Flujo frontend en 4 pasos: servicio → barbero → fecha/hora → datos del cliente → confirmación.
+- [x] Sólo se muestran horarios disponibles; los pasados aparecen bloqueados (no seleccionables).
+- [x] Email obligatorio del cliente (confirmación por email; sin WhatsApp/SMS en MVP).
+- [x] Slug auto-generado del nombre (slugify) con sufijo único en colisión y campo editable opcional (requisito admin).
 
 ### Personalización de la landing pública por tenant (ver ADR-013)
 
-- [ ] Config por tenant persistida en `Tenant.settings.landing` (JSONB), fusionada sobre `LANDING_DEFAULTS` (merge defensivo).
-- [ ] Endpoints `/v1/landing` GET/PUT protegidos (JWT + RBAC, rol admin), escopados por `tenantId` del token.
-- [ ] Panel admin `/admin/landing`: edición de presentación, marca/imágenes, paleta, tipografía y secciones visibles.
-- [ ] Acciones "Restaurar default" y "Ver mi landing" en el panel.
-- [ ] La personalización aplica SOLO a la landing pública `/[slug]` (aislamiento por CSS variables); los dashboards conservan su tema.
-- [ ] `PublicShop.landing` inyecta la config en el payload de `/v1/public/:slug`.
-- [ ] La identidad visual por defecto es dark luxury (ADR-015): paleta dark dorada sobre los **mismos 6 tokens `--landing-*`**, fuentes Marcellus / Spectral / IBM Plex Mono (IBM Plex como utility), barber-pole→hilo/motivo dorado; la personalización del tenant sigue aislada por CSS variables de scope local.
-- [ ] Se preparan Galería/Stats como capas frontend condicionales en la landing (ocultas por defecto; sin inventar datos ni imágenes).
+- [x] Config por tenant persistida en `Tenant.settings.landing` (JSONB), fusionada sobre `LANDING_DEFAULTS` (merge defensivo).
+- [x] Endpoints `/v1/landing` GET/PUT protegidos (JWT + RBAC, rol admin), escopados por `tenantId` del token.
+- [x] Panel admin `/admin/landing`: edición de presentación, marca/imágenes, paleta, tipografía y secciones visibles.
+- [x] Acciones "Restaurar default" y "Ver mi landing" en el panel.
+- [x] La personalización aplica SOLO a la landing pública `/[slug]` (aislamiento por CSS variables); los dashboards conservan su tema.
+- [x] `PublicShop.landing` inyecta la config en el payload de `/v1/public/:slug`.
+- [x] La identidad visual por defecto es dark luxury (ADR-015): paleta dark dorada sobre los **mismos 6 tokens `--landing-*`**, fuentes Marcellus / Spectral / IBM Plex Mono (IBM Plex como utility), barber-pole→hilo/motivo dorado; la personalización del tenant sigue aislada por CSS variables de scope local.
+- [x] Se preparan Galería/Stats como capas frontend condicionales en la landing (ocultas por defecto; sin inventar datos ni imágenes).
 
 ### Notificaciones (asíncronas)
 

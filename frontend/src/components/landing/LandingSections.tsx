@@ -1,179 +1,141 @@
-import type { ReactNode } from "react"
 import Link from "next/link"
-import { Clock, MapPin, Phone, Scissors } from "lucide-react"
 import type { LandingConfig } from "@/types/landing"
 import type { PublicShop } from "@/types/public"
 import { Reveal } from "@/components/landing/Reveal"
 
-type SectionTone = "light" | "warm"
-
 /*
- * Slots condicionales (ADR-015 §5): los datos que hoy no existen en el payload
- * público (imagen de servicio, "MÁS ELEGIDO", especialidad de barbero) se
- * renderizan única y exclusivamente si la fuente llega. Por defecto quedan
- * ocultos; NO se inventa ningún dato.
+ * Slots condicionales (ADR-016 §1.4): los datos que hoy no existen en el
+ * payload público (especialidad/foto de barbero) se renderizan única y
+ * exclusivamente si la fuente llega. Por defecto quedan ocultos;
+ * NO se inventa ningún dato.
  */
-interface ServiceExtras {
-  image?: { src: string; alt?: string }
-  mostChosen?: boolean
-}
-
 interface BarberExtras {
   specialty?: string
 }
 
-/* ── Wrappers de sección ──────────────────────────────────────────────── */
+/* ── Intro / Identidad ───────────────────────────────────────────────── */
 
-function Section({
-  id,
-  kicker,
-  title,
-  tone,
-  children,
-}: {
-  id: string
-  kicker: string
-  title: string
-  tone: SectionTone
-  children: ReactNode
-}) {
+function IntroSection() {
   return (
-    <section
-      id={id}
-      className="scroll-mt-24"
-      style={{ background: tone === "warm" ? "var(--landing-surface)" : "var(--landing-bg)" }}
-    >
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
-        <Reveal>
-          <div>
-            {/* Strop: hairline 1px + caret dorado (ADR-015) */}
-            <div className="landing-strop" aria-hidden />
-            <p
-              className="mb-2 text-xs font-semibold uppercase tracking-[0.3em]"
-              style={{ color: "var(--landing-accent)", fontFamily: "var(--landing-font-mono)" }}
-            >
-              {kicker}
-            </p>
-            <h2
-              className="text-3xl font-bold uppercase tracking-tight sm:text-4xl"
-              style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
-            >
-              {title}
-            </h2>
+    <section className="scroll-mt-24" style={{ background: "var(--landing-bg)" }}>
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+        <div className="grid gap-10 md:grid-cols-12 md:gap-16">
+          <div className="md:col-span-6">
+            <Reveal>
+              <div>
+                <p className="landing-eyebrow mb-4">IDENTIDAD</p>
+                <h2 className="landing-title">MÁS QUE UN CORTE. UNA EXPERIENCIA.</h2>
+              </div>
+            </Reveal>
           </div>
-        </Reveal>
-        <div className="mt-8">{children}</div>
+          <div className="md:col-span-5 md:col-start-8">
+            <Reveal delay={120}>
+              <div className="flex flex-col gap-8">
+                <div className="landing-hairline" aria-hidden />
+                <p
+                  className="text-base leading-relaxed"
+                  style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-body)" }}
+                >
+                  La silla, la máquina, el detalle. Trabajamos con técnica clásica y
+                  estética contemporánea para que cada visita termine en una decisión
+                  de estilo, no en un corte improvisado.
+                </p>
+                <span className="landing-index" style={{ fontSize: "3.5rem", lineHeight: 1 }} aria-hidden>
+                  01
+                </span>
+              </div>
+            </Reveal>
+          </div>
+        </div>
       </div>
     </section>
   )
 }
 
-function Card({ children, tone, delay = 0 }: { children: ReactNode; tone: SectionTone; delay?: number }) {
-  return (
-    <Reveal delay={delay}>
-      <div
-        className="landing-card relative p-5 transition-transform hover:-translate-y-1"
-        style={{ background: tone === "warm" ? "var(--landing-bg)" : "var(--landing-surface)" }}
-      >
-        {children}
-      </div>
-    </Reveal>
-  )
-}
+/* ── Servicios: lista editorial numerada con hairline ─────────────────── */
 
-/* ── Servicios ────────────────────────────────────────────────────────── */
-
-function ServicesSection({ shop, tone, slug }: { shop: PublicShop; tone: SectionTone; slug: string }) {
+function ServicesSection({ shop, slug }: { shop: PublicShop; slug: string }) {
   const services = shop.branches.flatMap((b) =>
     b.services.map((s) => ({ ...s, branchName: b.name })),
   )
   if (services.length === 0) return null
 
   return (
-    <Section id="servicios" kicker="SERVICIOS" title="Lo que hacemos" tone={tone}>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {services.map((s, i) => {
-          const extras = s as unknown as ServiceExtras
-          return (
-            <Card key={s.id} tone={tone} delay={(i % 3) * 90}>
-              {(extras.image?.src || extras.mostChosen) && (
-                <div className="mb-4 flex items-start justify-between gap-3">
-                  {extras.image?.src && (
-                    <img
-                      src={extras.image.src}
-                      alt={extras.image.alt ?? ""}
-                      loading="lazy"
-                      className="h-24 w-full object-cover"
-                    />
-                  )}
-                  {extras.mostChosen && (
-                    <span
-                      className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest"
-                      style={{
-                        color: "var(--landing-bg)",
-                        background: "var(--landing-accent)",
-                        fontFamily: "var(--landing-font-mono)",
-                      }}
+    <section id="servicios" className="scroll-mt-24" style={{ background: "var(--landing-bg)" }}>
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+        <Reveal>
+          <div>
+            <p className="landing-eyebrow mb-3">Carta</p>
+            <h2 className="landing-title">Servicios</h2>
+          </div>
+        </Reveal>
+
+        <div className="mt-6">
+          {services.map((s, i) => (
+            <Reveal key={s.id} delay={Math.min(i, 3) * 60}>
+              <div>
+                <div className="landing-list-row group">
+                  <span className="landing-index" aria-hidden>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <h3
+                      className="text-xl uppercase sm:text-2xl"
+                      style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
                     >
-                      Más elegido
+                      {s.name}
+                    </h3>
+                    {s.description && (
+                      <p
+                        className="text-sm"
+                        style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-body)" }}
+                      >
+                        {s.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="landing-row-meta">
+                    <span
+                      className="whitespace-nowrap text-sm"
+                      style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
+                    >
+                      {s.durationMinutes} min
                     </span>
-                  )}
+                    <span
+                      className="whitespace-nowrap text-sm"
+                      style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
+                    >
+                      S/ {Number(s.price).toFixed(2)}
+                    </span>
+                    <Link
+                      href={`/${slug}/reservar`}
+                      className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-bold uppercase tracking-widest transition-colors hover:text-[var(--landing-fg)]"
+                      style={{ color: "var(--landing-accent)", fontFamily: "var(--landing-font-mono)" }}
+                    >
+                      Reservar
+                      <span aria-hidden>›</span>
+                    </Link>
+                  </div>
                 </div>
-              )}
-              <div className="flex items-start justify-between gap-3">
-                <div
-                  className="flex size-11 shrink-0 items-center justify-center"
-                  style={{ border: "1px solid var(--landing-accent)" }}
-                >
-                  <Scissors className="size-5 text-[var(--landing-accent)]" />
-                </div>
-                <span
-                  className="text-lg font-semibold"
-                  style={{ color: "var(--landing-accent)", fontFamily: "var(--landing-font-mono)" }}
-                >
-                  S/ {Number(s.price).toFixed(2)}
-                </span>
+                {i < services.length - 1 && <div className="landing-hairline" aria-hidden />}
               </div>
-              <h3
-                className="mt-4 text-lg font-bold uppercase"
-                style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
-              >
-                {s.name}
-              </h3>
-              {s.description && (
-                <p className="mt-1 text-sm" style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-body)" }}>
-                  {s.description}
-                </p>
-              )}
-              <p
-                className="mt-3 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider"
-                style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
-              >
-                <Clock className="size-3.5" /> {s.durationMinutes} min
-              </p>
-              <Link
-                href={`/${slug}/reservar`}
-                className="landing-card-link mt-4 px-4 py-2 text-xs font-bold uppercase tracking-widest"
-              >
-                Reservar
-              </Link>
-            </Card>
-          )
-        })}
+            </Reveal>
+          ))}
+        </div>
       </div>
-    </Section>
+    </section>
   )
 }
 
-/* ── Barberos ─────────────────────────────────────────────────────────── */
+/* ── Equipo: lista editorial, monograma tipográfico, slots condicionales ─ */
 
-function BarbersSection({ shop, tone, slug }: { shop: PublicShop; tone: SectionTone; slug: string }) {
+function BarbersSection({ shop, slug }: { shop: PublicShop; slug: string }) {
   const barbers = shop.branches.flatMap((b) =>
     b.barbers.map((bar) => ({ ...bar, branchName: b.name })),
   )
   if (barbers.length === 0) return null
 
-  const initials = (name: string) =>
+  const monogram = (name: string) =>
     name
       .split(" ")
       .map((p) => p[0])
@@ -182,133 +144,171 @@ function BarbersSection({ shop, tone, slug }: { shop: PublicShop; tone: SectionT
       .toUpperCase()
 
   return (
-    <Section id="equipo" kicker="EL EQUIPO" title="Nuestros barbers" tone={tone}>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {barbers.map((barber, i) => {
-          const extras = barber as unknown as BarberExtras
-          return (
-            <Card key={barber.id} tone={tone} delay={(i % 4) * 90}>
-              <div
-                className="mx-auto flex size-16 items-center justify-center rounded-full text-xl font-bold"
-                style={{
-                  border: "1px solid var(--landing-accent)",
-                  color: "var(--landing-accent)",
-                  background: "var(--landing-bg)",
-                  fontFamily: "var(--landing-font-mono)",
-                }}
-              >
-                {initials(barber.name)}
+    <section id="equipo" className="scroll-mt-24" style={{ background: "var(--landing-bg)" }}>
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+        <Reveal>
+          <div>
+            <p className="landing-eyebrow mb-3">El equipo</p>
+            <h2 className="landing-title">Barbers</h2>
+          </div>
+        </Reveal>
+
+        <div className="mt-6">
+          {barbers.map((barber, i) => {
+            const extras = barber as unknown as BarberExtras
+            return (
+              <Reveal key={barber.id} delay={Math.min(i, 3) * 60}>
+                <div>
+                  <div className="landing-list-row group">
+                    {/* Monograma tipográfico / numeral de índice (sin fotos ni círculos) */}
+                    <span className="landing-index" aria-hidden>
+                      {monogram(barber.name)}
+                    </span>
+                    <h3
+                      className="min-w-0 text-xl uppercase sm:text-2xl"
+                      style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
+                    >
+                      {barber.name}
+                    </h3>
+                    <div className="landing-row-meta">
+                      {/* Slot condicional de especialidad: hoy no existe el dato → nada */}
+                      {extras.specialty && (
+                        <span
+                          className="whitespace-nowrap px-2 py-1 text-[10px] font-bold uppercase tracking-widest"
+                          style={{
+                            color: "var(--landing-accent)",
+                            border: "1px solid var(--landing-accent)",
+                            fontFamily: "var(--landing-font-mono)",
+                          }}
+                        >
+                          {extras.specialty}
+                        </span>
+                      )}
+                      <Link
+                        href={`/${slug}/reservar`}
+                        className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-bold uppercase tracking-widest transition-colors hover:text-[var(--landing-fg)]"
+                        style={{ color: "var(--landing-accent)", fontFamily: "var(--landing-font-mono)" }}
+                      >
+                        Reservar
+                        <span aria-hidden>›</span>
+                      </Link>
+                    </div>
+                  </div>
+                  {i < barbers.length - 1 && <div className="landing-hairline" aria-hidden />}
+                </div>
+              </Reveal>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ── Experiencia / diferencial ───────────────────────────────────────── */
+
+function ExperienceSection() {
+  return (
+    <section className="scroll-mt-24" style={{ background: "var(--landing-bg)" }}>
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+        <div className="grid gap-12 md:grid-cols-12 md:gap-16">
+          <div className="md:col-span-7">
+            <Reveal>
+              <div>
+                <p className="landing-eyebrow mb-4">La experiencia</p>
+                <h2 className="landing-title">CLÁSICO EN LA TÉCNICA. MODERNO EN EL ESTILO.</h2>
               </div>
-              <h3
-                className="mt-4 text-center text-base font-bold uppercase"
-                style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
-              >
-                {barber.name}
-              </h3>
-              {extras.specialty && (
-                <span
-                  className="mx-auto mt-2 block w-fit px-2 py-1 text-[10px] font-bold uppercase tracking-widest"
-                  style={{
-                    color: "var(--landing-accent)",
-                    border: "1px solid var(--landing-accent)",
-                    fontFamily: "var(--landing-font-mono)",
-                  }}
+            </Reveal>
+          </div>
+          <div className="md:col-span-4 md:col-start-9">
+            <Reveal delay={120}>
+              <div className="flex flex-col gap-8">
+                <div className="landing-hairline" aria-hidden />
+                <p
+                  className="text-base leading-relaxed"
+                  style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-body)" }}
                 >
-                  {extras.specialty}
+                  Métodos que no cambian, cortes que sí. Afilado, navaja y precisión
+                  sobre una base de técnica clásica; textura, contraste y actitud
+                  moderna en cada terminación.
+                </p>
+                <span className="landing-index" style={{ fontSize: "3.5rem", lineHeight: 1 }} aria-hidden>
+                  02
                 </span>
-              )}
-              <div className="mt-4 text-center">
-                <Link
-                  href={`/${slug}/reservar`}
-                  className="landing-card-link px-4 py-2 text-xs font-bold uppercase tracking-widest"
-                >
-                  Reservar
-                </Link>
               </div>
-            </Card>
-          )
-        })}
+            </Reveal>
+          </div>
+        </div>
       </div>
-    </Section>
+    </section>
   )
 }
 
-/* ── Horarios ─────────────────────────────────────────────────────────── */
+/* ── Horarios + Ubicación: sección única con datos reales de branch ───── */
 
-function ScheduleSection({ shop, tone }: { shop: PublicShop; tone: SectionTone }) {
-  const branches = shop.branches.filter((b) => b.openingTime && b.closingTime)
-  if (branches.length === 0) return null
-
-  return (
-    <Section id="horarios" kicker="HORARIOS" title="Cuándo nos encuentras" tone={tone}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {branches.map((b, i) => (
-          <Card key={b.id} tone={tone} delay={i * 100}>
-            <h3
-              className="text-base font-bold uppercase"
-              style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
-            >
-              {b.name}
-            </h3>
-            <p
-              className="mt-3 flex items-center gap-2 text-sm font-semibold"
-              style={{ color: "var(--landing-accent)", fontFamily: "var(--landing-font-mono)" }}
-            >
-              <Clock className="size-4" />
-              {b.openingTime} — {b.closingTime}
-            </p>
-            <p
-              className="mt-1 text-xs uppercase tracking-wider"
-              style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
-            >
-              Reserva con antelación
-            </p>
-          </Card>
-        ))}
-      </div>
-    </Section>
+function ScheduleLocationSection({ shop, config }: { shop: PublicShop; config: LandingConfig }) {
+  const branches = shop.branches.filter(
+    (b) =>
+      (config.sections.schedule && b.openingTime && b.closingTime) ||
+      (config.sections.location && (b.address || b.phone)),
   )
-}
-
-/* ── Ubicación ────────────────────────────────────────────────────────── */
-
-function LocationSection({ shop, tone }: { shop: PublicShop; tone: SectionTone }) {
-  const branches = shop.branches.filter((b) => b.address || b.phone)
   if (branches.length === 0) return null
 
   return (
-    <Section id="ubicacion" kicker="UBICACIÓN" title="Cómo llegar" tone={tone}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {branches.map((b, i) => (
-          <Card key={b.id} tone={tone} delay={i * 100}>
-            <h3
-              className="text-base font-bold uppercase"
-              style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
-            >
-              {b.name}
-            </h3>
-            {b.address && (
-              <p
-                className="mt-3 flex items-start gap-2 text-sm"
-                style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-body)" }}
-              >
-                <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--landing-accent)]" />
-                {b.address}
-              </p>
-            )}
-            {b.phone && (
-              <p
-                className="mt-2 flex items-center gap-2 text-sm"
-                style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
-              >
-                <Phone className="size-4 shrink-0 text-[var(--landing-accent)]" />
-                {b.phone}
-              </p>
-            )}
-          </Card>
-        ))}
+    <section id="horarios" className="scroll-mt-24" style={{ background: "var(--landing-bg)" }}>
+      {/* Marcador de ubicación para la ancla del nav (#ubicacion) */}
+      <span id="ubicacion" className="block" aria-hidden />
+      <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+        <Reveal>
+          <div>
+            <p className="landing-eyebrow mb-3">Sedes</p>
+            <h2 className="landing-title">HORARIOS · UBICACIÓN</h2>
+          </div>
+        </Reveal>
+
+        <div className="mt-10 grid gap-x-16 gap-y-10 md:grid-cols-2">
+          {branches.map((b, i) => (
+            <Reveal key={b.id} delay={i * 80}>
+              <div>
+                <h3
+                  className="text-xl uppercase"
+                  style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-display)" }}
+                >
+                  {b.name}
+                </h3>
+                <div className="landing-hairline mt-5" aria-hidden />
+                <div className="mt-5 flex flex-col gap-2.5">
+                  {config.sections.schedule && b.openingTime && b.closingTime && (
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
+                    >
+                      {b.openingTime} — {b.closingTime}
+                    </p>
+                  )}
+                  {b.address && (
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-body)" }}
+                    >
+                      {b.address}
+                    </p>
+                  )}
+                  {b.phone && (
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
+                    >
+                      {b.phone}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
       </div>
-    </Section>
+    </section>
   )
 }
 
@@ -325,10 +325,13 @@ export function LandingSections({
 }) {
   return (
     <>
-      {config.sections.services && <ServicesSection shop={shop} tone="light" slug={slug} />}
-      {config.sections.barbers && <BarbersSection shop={shop} tone="warm" slug={slug} />}
-      {config.sections.schedule && <ScheduleSection shop={shop} tone="light" />}
-      {config.sections.location && <LocationSection shop={shop} tone="warm" />}
+      <IntroSection />
+      {config.sections.services && <ServicesSection shop={shop} slug={slug} />}
+      {config.sections.barbers && <BarbersSection shop={shop} slug={slug} />}
+      <ExperienceSection />
+      {(config.sections.schedule || config.sections.location) && (
+        <ScheduleLocationSection shop={shop} config={config} />
+      )}
     </>
   )
 }

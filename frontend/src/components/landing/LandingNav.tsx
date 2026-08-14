@@ -12,6 +12,8 @@ const NAV_LINKS = [
   { id: "ubicacion", label: "Ubicación" },
 ]
 
+const NAV_CTA = "RESERVAR CITA"
+
 interface LandingNavProps {
   slug: string
   shopName: string
@@ -100,7 +102,7 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
               style={{ background: "var(--landing-fg)" }}
               aria-hidden
             />
-            <span className="relative">Reservar cita</span>
+            <span className="relative">{NAV_CTA}</span>
           </Link>
           <button
             type="button"
@@ -148,7 +150,7 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
                 fontFamily: "var(--landing-font-display)",
               }}
             >
-              Reservar cita
+              {NAV_CTA}
             </Link>
           </div>
         </div>

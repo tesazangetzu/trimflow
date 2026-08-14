@@ -12,6 +12,8 @@ import { LandingFooter } from "@/components/landing/LandingFooter"
 import { landingThemeVars } from "@/components/landing/landing-theme"
 import { LANDING_DEFAULTS, type LandingConfig } from "@/types/landing"
 
+const DEFAULT_HERO_TITLE = "EL CORTE QUE TE DEFINE."
+
 export function LandingPage({ slug }: { slug: string }) {
   const { shop, loading, notFound, error, reload } = usePublicData(slug)
 
@@ -28,6 +30,7 @@ export function LandingPage({ slug }: { slug: string }) {
   }
 
   const config: LandingConfig = shop.landing ?? LANDING_DEFAULTS
+  const heroTitle = config.presentation.heroTitle?.trim() || DEFAULT_HERO_TITLE
 
   return (
     <div
@@ -40,6 +43,7 @@ export function LandingPage({ slug }: { slug: string }) {
         slug={slug}
         shopName={shop.name}
         config={config}
+        heroTitle={heroTitle}
         hasHeroImage={Boolean(config.branding.heroImageUrl)}
       />
 
@@ -51,7 +55,7 @@ export function LandingPage({ slug }: { slug: string }) {
 
       {config.sections.booking && <LandingCTA slug={slug} shopName={shop.name} />}
 
-      <LandingFooter shopName={shop.name} slug={slug} />
+      <LandingFooter shopName={shop.name} slug={slug} branches={shop.branches} />
     </div>
   )
 }

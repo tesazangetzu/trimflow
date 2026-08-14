@@ -233,24 +233,24 @@ módulo/
 src/
   app/                    # Páginas (Next.js App Router)
     (dashboard)/admin/landing/   # Panel de personalización de la landing pública (ver ADR-013)
-    [slug]/              # Landing pública por slug — identidad dark luxury (ver ADR-012/015)
+    [slug]/              # Landing pública por slug — identidad dark luxury + composición editorial 8 secciones (ver ADR-012/015/016)
     [slug]/reservar/     # Vista de reserva separada (BookingWizard reutilizado), ver ADR-014
   components/             # Componentes React compartidos
     ui/                   # shadcn/ui components
     forms/                # Formularios reutilizables
     layouts/              # Layouts por rol (admin, barber, super-admin) + nav-config
     landing/              # Componentes de la landing pública (ver ADR-012/013/014/015)
-      LandingPage.tsx     #   Orquestador: Hero + secciones + CTA + Footer (incluye Gallery/Stats capas)
-      LandingHero.tsx     #   Hero dark: banda oscura + scrim/imagen + doble CTA + scroll indicator + marquesina
-      LandingSections.tsx #   Secciones dark (Servicios/Equipo/Galería/Stats/Horarios/Ubicación) + strop dorado
-      LandingNav.tsx      #   Nav transparente→oscuro al scroll + anchors + CTA + hamburguesa (mobile)
-      LandingCTA.tsx      #   CTA band "Reservar" (sweep + motivo dorado)
-      LandingFooter.tsx   #   Footer dinámico (nombre del shop + TrimFlow), extraído de LandingPage
-      LandingGallery.tsx  #   Galería grid/masonry (capa preparada: oculta hasta que exista config de imágenes)
-      LandingStats.tsx    #   Stats (capa preparada: oculta hasta que existan cifras configurables)
+      LandingPage.tsx     #   Orquestador: composición editorial de 8 secciones Hero→CTA→Footer + provisiona defaults de hero (ADR-016)
+      LandingHero.tsx     #   Hero editorial full-viewport: eyebrow tagline + shop.name, headline heroTitle, CTAs «RESERVAR CITA»/«VER SERVICIOS», scroll hint, imagen full-bleed+scrim o fallback tipográfico-geométrico, marquesina como franja sobria
+      LandingSections.tsx #   Secciones editoriales (ADR-016): INTRO + SERVICIOS lista numerada con hairline + EQUIPO lista editorial (sin avatares) + EXPERIENCIA + sección unificada HORARIOS·UBICACIÓN con datos reales de branch (sin tarjetas, sin copy inventado)
+      LandingNav.tsx      #   Nav estética editorial: transparente→oscuro al scroll + anchors + CTA + hamburguesa (mobile) + indicador de sección activa con acento
+      LandingCTA.tsx      #   CTA final: «¿LISTO PARA TU PRÓXIMO CORTE?» + único botón «RESERVAR CITA» (sweep + hairline dorado)
+      LandingFooter.tsx   #   Footer: marca (shop.name + Powered by TrimFlow), navegación, ubicación/horarios de shop.branches; sin redes (hoy sin datos)
+      LandingGallery.tsx  #   Galería grid/masonry — capa preparada (retorna null sin datos; ver ADR-015/016)
+      LandingStats.tsx    #   Stats — capa preparada (retorna null sin cifras configurables; ver ADR-015/016)
       LandingState.tsx    #   Estados loading/notFound/error
       Reveal.tsx          #   Scroll reveal (IntersectionObserver + prefers-reduced-motion)
-      landing-theme.ts    #   landingThemeVars: paleta dark luxury sobre los 6 tokens --landing-* (ADR-013/015)
+      landing-theme.ts    #   landingThemeVars: paleta dark luxury sobre los 6 tokens --landing-* (ADR-013/015; composición editorial ADR-016)
     booking/              # BookingWizard + ReservationPage (flujo de reserva pública) + WIZARD_TOKENS scoped
   lib/                    # Utilidades compartidas
   services/               # Clientes API (por módulo): landing.service.ts, etc.

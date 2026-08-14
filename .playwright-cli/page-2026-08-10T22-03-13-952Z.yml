@@ -1,0 +1,62 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e267] [cursor=pointer]:
+    - generic [ref=e270]:
+      - text: Compiling
+      - generic [ref=e271]:
+        - generic [ref=e272]: .
+        - generic [ref=e273]: .
+        - generic [ref=e274]: .
+  - alert [ref=e266]
+  - generic:
+    - region "Notifications"
+  - main [ref=e275]:
+    - generic [ref=e276]:
+      - generic [ref=e278]:
+        - link "Volver a Barbería El Clásico" [ref=e279] [cursor=pointer]:
+          - /url: /barberia-el-clasico
+        - generic [ref=e282]: Reserva
+      - generic [ref=e284]:
+        - generic [ref=e285]:
+          - generic [ref=e286]: 💈
+          - heading "Barbería El Clásico" [level=1] [ref=e287]
+          - paragraph [ref=e288]: Av. Libertador 123
+        - generic [ref=e289]:
+          - button "Sucursal Centro" [ref=e290]
+          - button "Sucursal Norte" [ref=e291]
+        - generic [ref=e293]:
+          - generic [ref=e294]: Servicio
+          - generic [ref=e295]: Paso 1 de 5
+        - generic [ref=e303]:
+          - heading "Elige un servicio" [level=2] [ref=e304]
+          - paragraph [ref=e305]: Selecciona lo que quieres agendar.
+          - generic [ref=e306]:
+            - button "Corte de cabello Corte clásico con tijera o máquina 30 min $15.000" [ref=e307]:
+              - generic [ref=e308]:
+                - generic [ref=e309]:
+                  - heading "Corte de cabello" [level=3] [ref=e310]
+                  - paragraph [ref=e311]: Corte clásico con tijera o máquina
+                  - generic [ref=e312]: 30 min
+                - generic [ref=e313]: $15.000
+            - button "Barba completa Arreglo de barba con navaja 20 min $10.000" [ref=e314]:
+              - generic [ref=e315]:
+                - generic [ref=e316]:
+                  - heading "Barba completa" [level=3] [ref=e317]
+                  - paragraph [ref=e318]: Arreglo de barba con navaja
+                  - generic [ref=e319]: 20 min
+                - generic [ref=e320]: $10.000
+            - button "Corte + Barba Combo corte de cabello y barba 45 min $22.000" [ref=e321]:
+              - generic [ref=e322]:
+                - generic [ref=e323]:
+                  - heading "Corte + Barba" [level=3] [ref=e324]
+                  - paragraph [ref=e325]: Combo corte de cabello y barba
+                  - generic [ref=e326]: 45 min
+                - generic [ref=e327]: $22.000
+            - button "Corte infantil Corte para niños hasta 12 años 25 min $12.000" [ref=e328]:
+              - generic [ref=e329]:
+                - generic [ref=e330]:
+                  - heading "Corte infantil" [level=3] [ref=e331]
+                  - paragraph [ref=e332]: Corte para niños hasta 12 años
+                  - generic [ref=e333]: 25 min
+                - generic [ref=e334]: $12.000
+          - generic [ref=e335]:
+            - button "Continuar" [disabled]

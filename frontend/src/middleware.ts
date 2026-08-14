@@ -16,10 +16,14 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value
   const { pathname } = request.nextUrl
 
-  // Rutas públicas de la landing por slug (un único segmento de nivel superior
-  // que no colisiona con login/register ni con las raíces de los dashboards).
+  // Rutas públicas de la landing por slug: /[slug] y /[slug]/reservar.
+  // Ninguno de sus segmentos debe colisionar con login/register ni con las
+  // raíces de los dashboards.
   const segments = pathname.split("/").filter(Boolean)
-  if (segments.length === 1 && !RESERVED_ROOTS.has(segments[0])) {
+  if (
+    segments.length === 1 && !RESERVED_ROOTS.has(segments[0])
+    || segments.length === 2 && segments[1] === "reservar" && !RESERVED_ROOTS.has(segments[0])
+  ) {
     return NextResponse.next()
   }
 

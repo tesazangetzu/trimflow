@@ -273,6 +273,7 @@
 
 .landing-page {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 @keyframes landing-marquee {
@@ -349,6 +350,115 @@
   color: var(--landing-bg);
 }
 
+/* ── Landing editorial (ADR-016) ──
+   Composición editorial de la landing `/[slug]`: escalas clamp(), eyebrows,
+   índices mono, hairlines y listas numeradas en sustitución de las cajas
+   `surface`/`landing-card` de los componentes de landing. */
+
+/* Escala tipográfica editorial: títulos de sección con clamp(). */
+.landing-title {
+  font-family: var(--landing-font-display);
+  font-size: clamp(1.875rem, 4.2vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: var(--landing-fg);
+  text-transform: uppercase;
+}
+
+/* Hero <h1>: escala display con clamp(), sin trade-off en mobile. */
+.landing-hero-title {
+  font-size: clamp(2.5rem, 8vw, 6.25rem);
+  line-height: 0.95;
+}
+
+/* Eyebrow / kicker: mono, accent, mayúsculas, tracking amplio. */
+.landing-eyebrow {
+  font-family: var(--landing-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--landing-accent);
+}
+
+/* Índice editorial: numeral mono muted, ancho tabular fijo. */
+.landing-index {
+  font-family: var(--landing-font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.15em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--landing-muted);
+}
+
+/* Hairline: separador de 1px dorado tenue (color-mix con accent ~30%). */
+.landing-hairline {
+  height: 1px;
+  background: color-mix(in srgb, var(--landing-accent) 30%, transparent);
+}
+
+/* Fila de lista editorial: índice | contenido | metadatos + acción. */
+.landing-list-row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  gap: 0.75rem 1.5rem;
+  align-items: baseline;
+  padding: 1.75rem 0;
+  transition: padding-left 0.25s ease;
+}
+.landing-list-row .landing-row-meta {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+.landing-list-row:hover {
+  padding-left: 0.5rem;
+}
+@media (min-width: 768px) {
+  .landing-list-row {
+    grid-template-columns: 2.5rem 1fr auto;
+  }
+  .landing-list-row .landing-row-meta {
+    grid-column: auto;
+    justify-self: end;
+  }
+}
+
+/* Fallback del hero sin imagen: composición geométrica con hairlines y
+   motivos derivados de la paleta. NO inventa URLs ni imágenes. */
+.landing-hero-fallback {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.landing-hero-fallback::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--landing-accent) 30%, transparent) 0%,
+    color-mix(in srgb, var(--landing-accent) 30%, transparent) 45%,
+    transparent 100%
+  );
+}
+.landing-hero-fallback::after {
+  content: "";
+  position: absolute;
+  bottom: 4.5rem;
+  right: 2.75rem;
+  width: 3.25rem;
+  height: 4.5rem;
+  border: 1px solid color-mix(in srgb, var(--landing-accent) 40%, transparent);
+}
+
 /* Navbar de la landing (ADR-015): transparente en reposo sobre el hero y con
    fondo oscuro translúcido + blur al superar el umbral de scroll. */
 .landing-nav {
@@ -373,10 +483,17 @@
   max-height: 24rem;
 }
 
-/* Marquesina (ADR-015): se mantiene la keyframe landing-marquee; se agrupa en
-   esta clase para poder desactivarla con prefers-reduced-motion. */
+/* Marquesina (ADR-015/016): se mantiene la keyframe landing-marquee; se agrupa en
+   esta clase para poder desactivarla con prefers-reduced-motion. La franja
+   contenedora (.landing-marquee-band) recorta con mask para no invadir los
+   bordes y evita scroll horizontal con overflow-x: clip. */
 .landing-marquee {
   animation: landing-marquee 28s linear infinite;
+}
+.landing-marquee-band {
+  overflow-x: clip;
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
 }
 
 /* Indicador de scroll del hero (ADR-015): caret dorado animado en la parte baja. */
@@ -451,6 +568,10 @@
   }
   .landing-nav,
   .landing-card::before {
+    transition: none;
+  }
+  .landing-list-row {
+    padding-left: 0;
     transition: none;
   }
 }

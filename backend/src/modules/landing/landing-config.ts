@@ -42,7 +42,7 @@ export interface LandingBranding {
 export interface LandingPresentation {
   /** Eslogan corto que acompaña al nombre */
   tagline: string;
-  /** Título del hero. Vacío => usa el nombre de la barbería */
+  /** Título del hero. Default: headline editorial global (ADR-016) */
   heroTitle: string;
   /** Subtítulo del hero */
   heroSubtitle: string;
@@ -87,9 +87,9 @@ export const LANDING_DEFAULTS: LandingConfig = {
   },
   presentation: {
     tagline: 'BARBERÍA · CLÁSICA',
-    heroTitle: '',
+    heroTitle: 'EL CORTE QUE TE DEFINE.',
     heroSubtitle:
-      'Cortes de precisión, barbas definidas y estilo que habla por ti. Reserva tu cita en segundos.',
+      'Técnica clásica, actitud moderna. Cada corte una decisión de estilo.',
     tickerItems: ['CORTES', 'BARBAS', 'ESTILO', 'RESERVA'],
   },
   sections: {

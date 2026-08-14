@@ -115,3 +115,9 @@ El **mecanismo de ADR-013 permanece intacto**: la personalización sigue persist
 Los **valores por defecto** de la paleta cambian de nuevo hacia la identidad **dark luxury** (`LANDING_DEFAULTS` backend y su espejo frontend `types/landing.ts`): fondo `#0A0A0A`/superficie `#111111`, texto marfil `#F2EDE4`, muted taupe `#8A8178`, acento dorado old-gold `#C9A227` y danger rojo ladrillo `#C0392B`. Las fuentes display/body **se mantienen** (Marcellus/Spectral; IBM Plex Mono como utility). Ver **ADR-015**.
 
 El **esquema ADR-013 permanece intacto**: los **mismos 6 tokens** `--landing-*` (asphalt/concrete/smoke/bone/neon/blood), la física de CSS variables de scope local (`landingThemeVars`), el merge defensivo y la persistencia en `Tenant.settings.landing` no cambian; **no se añade campo nuevo** (ni `theme`, ni `gallery`, ni `stats`) en esta iteración. Los tenants con config guardada **conservan su paleta** hasta pulsar "Restaurar default" en `/admin/landing`. Sin cambios de contrato API ni migración de DB.
+
+---
+
+## Actualización 2026-08-08 (ADR-016)
+
+El **hero** de la landing pasa a consumir `tagline` / `heroTitle` / `heroSubtitle` / `heroImageUrl` como **campos del override** (los mismos campos existentes de `presentation`/`branding`), con **nuevos valores default**: `heroTitle` **«EL CORTE QUE TE DEFINE.»** y un `heroSubtitle` editorial de apoyo (ambos en `LANDING_DEFAULTS` backend + espejo frontend `types/landing.ts`). El **esquema ADR-013 permanece intacto**: los **mismos 6 tokens** `--landing-*`, el merge defensivo (`mergeLandingConfig`) y la persistencia en `Tenant.settings.landing` no cambian; **no hay campo nuevo** (el label de los CTAs sigue siendo un default global del componente sin campo en el esquema). Los tenants con config guardada conservan sus valores hasta "Restaurar default" o actualizar su override. Ver **ADR-016**.

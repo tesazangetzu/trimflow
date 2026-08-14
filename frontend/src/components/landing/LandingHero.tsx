@@ -3,23 +3,27 @@
 import Link from "next/link"
 import { useEffect, useRef } from "react"
 import type { CSSProperties } from "react"
-import { ChevronDown, Scissors } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import type { LandingConfig } from "@/types/landing"
+
+const CTA_PRIMARY = "RESERVAR CITA"
+const CTA_SECONDARY = "VER SERVICIOS"
+const TICKER_FALLBACK = ["CORTES", "BARBAS", "ESTILO", "RESERVA"]
 
 interface LandingHeroProps {
   slug: string
   shopName: string
   config: LandingConfig
+  heroTitle: string
   hasHeroImage: boolean
 }
 
-export function LandingHero({ slug, shopName, config, hasHeroImage }: LandingHeroProps) {
-  const bodyRef = useRef<HTMLDivElement>(null)
+export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }: LandingHeroProps) {
+  const bodyRef = useRef<HTMLElement>(null)
   const { presentation, branding } = config
-  const title = presentation.heroTitle?.trim() || shopName
   const ticker = presentation.tickerItems?.length
     ? presentation.tickerItems
-    : ["CORTES", "BARBAS", "ESTILO", "RESERVA"]
+    : TICKER_FALLBACK
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
@@ -29,16 +33,17 @@ export function LandingHero({ slug, shopName, config, hasHeroImage }: LandingHer
 
   return (
     <header
-      className="landing-hero relative overflow-hidden"
+      ref={bodyRef}
+      className="landing-hero relative flex min-h-[100svh] flex-col overflow-hidden"
       style={{ background: "var(--landing-hero-bg, #0A0A0A)" }}
     >
-      {/* Imagen de fondo (opcional): velada detrás de la banda oscura */}
+      {/* Imagen de fondo (opcional): full-bleed velada + scrim hacia --landing-bg */}
       {hasHeroImage && branding.heroImageUrl && (
         <div className="pointer-events-none absolute inset-0">
           <img
             src={branding.heroImageUrl}
             alt=""
-            className="h-full w-full object-cover opacity-30"
+            className="h-full w-full object-cover opacity-35"
             onError={(e) => {
               ;(e.target as HTMLImageElement).style.display = "none"
             }}
@@ -50,59 +55,42 @@ export function LandingHero({ slug, shopName, config, hasHeroImage }: LandingHer
         </div>
       )}
 
+      {/* Fallback tipográfico/geométrico: hairlines doradas + numeral de índice.
+          Sin imagen ni URLs inventadas. */}
+      {(!hasHeroImage || !branding.heroImageUrl) && (
+        <div className="landing-hero-fallback pointer-events-none absolute inset-0" aria-hidden />
+      )}
+
       <div
-        ref={bodyRef}
-        className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20"
+        className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-4 py-24 sm:px-6"
         style={{
           "--landing-fg": "var(--landing-hero-fg, #F2EDE4)",
           "--landing-muted": "var(--landing-hero-muted, #8A8178)",
         } as CSSProperties}
       >
-        {/* Tagline stamp */}
-        <div className="landing-hero-block flex items-center gap-3" style={{ animationDelay: "0ms" }}>
-          <Scissors className="size-5" style={{ color: "var(--landing-accent)" }} />
-          <span
-            className="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]"
-            style={{
-              border: "1px solid var(--landing-accent)",
-              color: "var(--landing-fg)",
-              fontFamily: "var(--landing-font-mono)",
-            }}
+        {/* Eyebrow / kicker: tagline mono accent + nombre del shop siempre presente */}
+        <div className="landing-hero-block flex flex-col gap-1.5" style={{ animationDelay: "0ms" }}>
+          <p className="landing-eyebrow">{presentation.tagline || "BARBERÍA"}</p>
+          <p
+            className="text-sm uppercase tracking-[0.3em]"
+            style={{ color: "var(--landing-muted)", fontFamily: "var(--landing-font-mono)" }}
           >
-            {presentation.tagline || "BARBERÍA"}
-          </span>
+            {shopName}
+          </p>
         </div>
 
-        {/* Logo */}
-        {branding.logoUrl && (
-          <div className="landing-hero-block mb-6 mt-6" style={{ animationDelay: "80ms" }}>
-            <img
-              src={branding.logoUrl}
-              alt={`Logo de ${shopName}`}
-              className="h-20 w-20 object-contain"
-              onError={(e) => {
-                ;(e.target as HTMLImageElement).style.display = "none"
-              }}
-            />
-          </div>
-        )}
-
-        {/* Nombre gigante en tinta clara sobre banda oscura */}
+        {/* Headline display */}
         <h1
-          className="landing-hero-block max-w-4xl text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-7xl md:text-8xl"
-          style={{
-            animationDelay: "160ms",
-            fontFamily: "var(--landing-font-display)",
-            color: "var(--landing-fg)",
-          }}
+          className="landing-title landing-hero-title landing-hero-block mt-6 max-w-4xl uppercase"
+          style={{ animationDelay: "120ms" }}
         >
-          {title}
+          {heroTitle}
         </h1>
 
         <p
           className="landing-hero-block mt-6 max-w-xl text-base sm:text-lg"
           style={{
-            animationDelay: "240ms",
+            animationDelay: "200ms",
             color: "var(--landing-muted)",
             fontFamily: "var(--landing-font-body)",
           }}
@@ -110,64 +98,57 @@ export function LandingHero({ slug, shopName, config, hasHeroImage }: LandingHer
           {presentation.heroSubtitle}
         </p>
 
-        <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+        <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
           <Link
             href={`/${slug}/reservar`}
             className="landing-hero-block inline-flex items-center gap-2 px-8 py-4 text-sm font-bold uppercase tracking-widest transition-transform hover:translate-y-[-2px]"
             style={{
-              animationDelay: "320ms",
+              animationDelay: "280ms",
               background: "var(--landing-accent)",
               color: "var(--landing-bg)",
               fontFamily: "var(--landing-font-display)",
-              boxShadow:
-                "6px 6px 0 0 var(--landing-hero-bg, #0A0A0A), 6px 6px 0 2px var(--landing-accent)",
             }}
           >
-            Reservar ahora
+            {CTA_PRIMARY}
           </Link>
           <a
             href="#servicios"
             className="landing-hero-block inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-widest transition-colors hover:bg-[var(--landing-accent)]/10"
             style={{
-              animationDelay: "400ms",
+              animationDelay: "360ms",
               border: "1px solid var(--landing-accent)",
               color: "var(--landing-fg)",
               background: "transparent",
               fontFamily: "var(--landing-font-display)",
             }}
           >
-            Ver servicios
+            {CTA_SECONDARY}
           </a>
         </div>
       </div>
 
-      {/* Indicador de scroll (ADR-015): se oculta y desactiva con
-          prefers-reduced-motion vía CSS (globals.css). */}
+      {/* Indicador de scroll (se oculta y desactiva con prefers-reduced-motion vía CSS). */}
       <a
         href="#servicios"
         aria-label="Bajar a servicios"
-        className="landing-scroll-hint absolute bottom-16 left-1/2 z-10 hidden -translate-x-1/2 sm:flex"
+        className="landing-scroll-hint absolute bottom-24 left-1/2 z-10 hidden -translate-x-1/2 sm:flex"
       >
-        <span className="text-[10px] font-semibold uppercase tracking-[0.3em]">
-          Scroll
-        </span>
         <ChevronDown className="landing-scroll-chevron size-4" aria-hidden />
       </a>
 
-      {/* Marquesina: banda oscura, letras muted, separadores caret dorados */}
+      {/* Marquesina: franja fina inferior sobria, separadores caret dorados */}
       <div
-        className="landing-hero-block relative overflow-hidden border-y py-3"
+        className="landing-marquee-band relative overflow-hidden border-t"
         style={{
-          animationDelay: "400ms",
-          borderColor: "var(--landing-accent)",
+          borderColor: "color-mix(in srgb, var(--landing-accent) 30%, transparent)",
           background: "var(--landing-hero-bg, #0A0A0A)",
         }}
       >
-        <div className="landing-marquee flex w-max gap-8 whitespace-nowrap">
+        <div className="landing-marquee flex w-max gap-8 whitespace-nowrap px-4 py-3 sm:px-6">
           {[...ticker, ...ticker, ...ticker].map((item, i) => (
             <span
               key={i}
-              className="flex items-center gap-8 text-sm font-semibold uppercase tracking-[0.3em]"
+              className="flex items-center gap-8 text-xs font-medium uppercase tracking-[0.3em]"
               style={{ color: "var(--landing-hero-muted, #8A8178)", fontFamily: "var(--landing-font-mono)" }}
             >
               {item}

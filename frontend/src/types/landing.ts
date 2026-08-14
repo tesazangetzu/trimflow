@@ -73,9 +73,9 @@ export const LANDING_DEFAULTS: LandingConfig = {
   },
   presentation: {
     tagline: "BARBERÍA · CLÁSICA",
-    heroTitle: "",
+    heroTitle: "EL CORTE QUE TE DEFINE.",
     heroSubtitle:
-      "Cortes de precisión, barbas definidas y estilo que habla por ti. Reserva tu cita en segundos.",
+      "Técnica clásica, actitud moderna. Cada corte una decisión de estilo.",
     tickerItems: ["CORTES", "BARBAS", "ESTILO", "RESERVA"],
   },
   sections: {

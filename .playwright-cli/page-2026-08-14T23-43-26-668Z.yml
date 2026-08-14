@@ -1,0 +1,25 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - generic [ref=f2e6]: TrimFlow
+      - generic [ref=f2e7]: Inicia sesión en tu cuenta
+    - generic [ref=f2e8]:
+      - generic [ref=f2e9]:
+        - generic [ref=f2e10]:
+          - generic [ref=f2e11]: Email
+          - textbox "Email" [ref=f2e12]:
+            - /placeholder: admin@trimflow.com
+        - generic [ref=f2e13]:
+          - generic [ref=f2e14]: Contraseña
+          - textbox "Contraseña" [ref=f2e15]:
+            - /placeholder: ••••••
+      - generic [ref=f2e16]:
+        - button "Iniciar sesión" [ref=f2e17]
+        - paragraph [ref=f2e18]:
+          - text: ¿No tienes cuenta?
+          - link "Registrarse" [ref=f2e19] [cursor=pointer]:
+            - /url: /register
+  - button "Open Next.js Dev Tools" [ref=f2e25] [cursor=pointer]
+  - alert [ref=f2e29]
+  - generic:
+    - region "Notifications"

@@ -1,0 +1,147 @@
+- generic [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - complementary [ref=f4e3]:
+      - generic [ref=f4e5]:
+        - generic [ref=f4e6]:
+          - generic [ref=f4e7]: T
+          - generic [ref=f4e8]: TRIMFLOW
+        - navigation [ref=f4e9]:
+          - generic [ref=f4e10]:
+            - generic [ref=f4e11]: MENU
+            - list [ref=f4e12]:
+              - listitem [ref=f4e13]:
+                - link [ref=f4e224] [cursor=pointer]:
+                  - /url: /admin/dashboard
+                  - generic [ref=f4e20]: Dashboard
+              - listitem [ref=f4e21]:
+                - link [ref=f4e225] [cursor=pointer]:
+                  - /url: /admin/branches
+                  - generic [ref=f4e27]: Sucursales
+              - listitem [ref=f4e28]:
+                - link [ref=f4e226] [cursor=pointer]:
+                  - /url: /admin/barbers
+                  - generic [ref=f4e42]: Barbers
+              - listitem [ref=f4e43]:
+                - link [ref=f4e227] [cursor=pointer]:
+                  - /url: /admin/services
+                  - generic [ref=f4e51]: Servicios
+              - listitem [ref=f4e52]:
+                - link [ref=f4e228] [cursor=pointer]:
+                  - /url: /admin/schedules
+                  - generic [ref=f4e56]: Horarios
+              - listitem [ref=f4e57]:
+                - link [ref=f4e229] [cursor=pointer]:
+                  - /url: /admin/customers
+                  - generic [ref=f4e64]: Clientes
+          - generic [ref=f4e65]:
+            - generic [ref=f4e66]: OTHERS
+            - list [ref=f4e67]:
+              - listitem [ref=f4e68]:
+                - link [ref=f4e230] [cursor=pointer]:
+                  - /url: /admin/appointments
+                  - generic [ref=f4e73]: Citas
+              - listitem [ref=f4e74]:
+                - link [ref=f4e231] [cursor=pointer]:
+                  - /url: /admin/landing
+                  - generic [ref=f4e82]: Landing
+        - generic [ref=f4e84]:
+          - generic [ref=f4e85]: A
+          - generic [ref=f4e87]:
+            - paragraph [ref=f4e88]: Admin
+            - paragraph [ref=f4e89]: Admin
+          - button [ref=f4e232]
+    - generic [ref=f4e91]:
+      - banner [ref=f4e92]:
+        - generic [ref=f4e93]:
+          - button [ref=f4e233] [cursor=pointer]
+          - button [ref=f4e234] [cursor=pointer]:
+            - generic [ref=f4e96]: Buscar...
+            - generic [ref=f4e97]: ⌘K
+        - generic [ref=f4e98]:
+          - button [ref=f4e235] [cursor=pointer]
+          - button [ref=f4e236] [cursor=pointer]:
+            - generic [ref=f4e104]: "2"
+          - button [ref=f4e237] [cursor=pointer]:
+            - generic [ref=f4e106]: A
+            - paragraph [ref=f4e109]: Admin
+      - main [ref=f4e112]:
+        - generic [ref=f4e113]:
+          - heading [level=5] [ref=f4e238]: Panel de Administración
+          - paragraph [ref=f4e115]: Home / Admin / Panel
+        - generic [ref=f4e116]:
+          - generic [ref=f4e117]:
+            - heading [level=1] [ref=f4e239]: Sucursales
+            - button [ref=f4e240]: Nueva Sucursal
+          - table [ref=f4e244]:
+            - rowgroup [ref=f4e245]:
+              - row [ref=f4e246]:
+                - columnheader [ref=f4e247]: Nombre
+                - columnheader [ref=f4e248]: Teléfono
+                - columnheader [ref=f4e249]: Horario
+                - columnheader [ref=f4e250]
+            - rowgroup [ref=f4e251]:
+              - row [ref=f4e252]:
+                - cell [ref=f4e253]:
+                  - generic [ref=f4e260]:
+                    - generic [ref=f4e261]: Sucursal Centro
+                    - generic [ref=f4e262]: Av. Libertador 123
+                - cell [ref=f4e266]: "+56912345678"
+                - cell [ref=f4e267]:
+                  - generic [ref=f4e268]: 09:00:00 - 19:00:00
+                - cell [ref=f4e269]:
+                  - generic [ref=f4e270]:
+                    - button [ref=f4e271]
+                    - button [ref=f4e272]
+              - row [ref=f4e273]:
+                - cell [ref=f4e274]:
+                  - generic [ref=f4e281]:
+                    - generic [ref=f4e282]: Sucursal Norte
+                    - generic [ref=f4e283]: Av. Del Valle 456
+                - cell [ref=f4e287]: "+56987654321"
+                - cell [ref=f4e288]:
+                  - generic [ref=f4e289]: 10:00:00 - 20:00:00
+                - cell [ref=f4e290]:
+                  - generic [ref=f4e291]:
+                    - button [ref=f4e292]
+                    - button [ref=f4e293]
+              - row [ref=f4e294]:
+                - cell [ref=f4e295]:
+                  - generic [ref=f4e302]:
+                    - generic [ref=f4e303]: Studio 42 Providencia
+                    - generic [ref=f4e304]: Providencia 789
+                - cell [ref=f4e308]: "+56956789012"
+                - cell [ref=f4e309]:
+                  - generic [ref=f4e310]: 09:00:00 - 18:00:00
+                - cell [ref=f4e311]:
+                  - generic [ref=f4e312]:
+                    - button [ref=f4e313]
+                    - button [ref=f4e314]
+  - button "Open Next.js Dev Tools" [ref=f4e220] [cursor=pointer]
+  - alert [ref=f4e315]
+  - generic:
+    - region "Notifications"
+  - dialog [ref=f4e319]:
+    - generic [ref=f4e320]:
+      - heading "Crear sucursal" [level=2] [ref=f4e321]
+      - paragraph [ref=f4e322]: Registra una nueva sucursal para la barbería.
+    - generic [ref=f4e323]:
+      - generic [ref=f4e324]:
+        - generic [ref=f4e325]: Nombre
+        - textbox "Nombre" [active] [ref=f4e326]
+      - generic [ref=f4e327]:
+        - generic [ref=f4e328]: Dirección
+        - textbox "Dirección" [ref=f4e329]
+      - generic [ref=f4e330]:
+        - generic [ref=f4e331]: Teléfono
+        - textbox "Teléfono" [ref=f4e332]
+      - generic [ref=f4e333]:
+        - generic [ref=f4e334]:
+          - generic [ref=f4e335]: Apertura
+          - textbox "Apertura" [ref=f4e336]
+        - generic [ref=f4e337]:
+          - generic [ref=f4e338]: Cierre
+          - textbox "Cierre" [ref=f4e339]
+      - generic [ref=f4e340]:
+        - button "Cancelar" [ref=f4e341]
+        - button "Crear sucursal" [ref=f4e342]
+    - button "Close" [ref=f4e343]

@@ -184,14 +184,14 @@ Ninguno. Todos los componentes existían (ADR-015) y se reconstruyeron in-place.
 
 ## Deuda técnica identificada
 
-| # | Descripción | Severidad | Archivos afectados | Urgencia |
-|---|-------------|-----------|-------------------|----------|
-| 1 | Lint del backend no ejecutable: `eslint` fuera de devDependencies de `backend/` | BAJA | `backend/package.json` | Preexistente (ADR-015); alinear con frontend en ciclo posterior |
-| 2 | Literal «RESERVAR CITA» duplicado en 3 constantes locales (`CTA_PRIMARY`, `NAV_CTA`, `CTA_LABEL`) | BAJA | `LandingHero.tsx`, `LandingNav.tsx`, `LandingCTA.tsx` | Un export único compartido evitaría drift |
-| 3 | Warning `@next/next/no-img-element` en el `<img>` del hero | BAJA | `LandingHero.tsx:42` | Heredado de ADR-015; migrable a `next/image` |
-| 4 | `TICKER_FALLBACK` duplica `LANDING_DEFAULTS.tickerItems` (dead code defensivo) | BAJA | `LandingHero.tsx` | Baja prioridad |
-| 5 | `.landing-scroll-hint` unlayered gana en cascada a `hidden sm:flex` (hint quizá visible en móvil) | BAJA | `globals.css` / `LandingHero.tsx` | Preexistente; el gate reduced-motion sí funciona |
-| 6 | Verificación manual en dev server con tenant demo pendiente (entorno QA no disponible en el ciclo) | BAJA | — | Ejecutar en el próximo ciclo de QA |
+| # | Descripción | Severidad | Archivos afectados | Estado |
+|---|-------------|-----------|-------------------|--------|
+| 1 | Lint del backend no ejecutable: `eslint` fuera de devDependencies de `backend/` | BAJA | `backend/package.json` | ✅ Resuelto 2026-08-14: `eslint ^9` + `@eslint/js`, `typescript-eslint`, `eslint-config-prettier`, `globals` en devDependencies; `eslint.config.mjs` flat-config; `npm run lint` ejecutable (`eslint: not found` → corre; quedan errores `any`/unused preexistentes fuera de alcance) |
+| 2 | Literal «RESERVAR CITA» duplicado en 3 constantes locales (`CTA_PRIMARY`, `NAV_CTA`, `CTA_LABEL`) | BAJA | `LandingHero.tsx`, `LandingNav.tsx`, `LandingCTA.tsx`, nuevo `landing-text.ts` | ✅ Resuelto 2026-08-14: export único `CTA_LABEL` en `landing-text.ts` consumido por los 3 componentes |
+| 3 | Warning `@next/next/no-img-element` en el `<img>` del hero | BAJA | `LandingHero.tsx` | ✅ Resuelto 2026-08-14: migrado a `next/image` con `unoptimized` (URL remota por tenant; `remotePatterns` inviable) + `fill`/`priority` |
+| 4 | `TICKER_FALLBACK` duplica `LANDING_DEFAULTS.tickerItems` (dead code defensivo) | BAJA | `LandingHero.tsx` | ✅ Resuelto 2026-08-14: fallback directo a `LANDING_DEFAULTS.presentation.tickerItems`; constante local eliminada |
+| 5 | `.landing-scroll-hint` unlayered gana en cascada a `hidden sm:flex` (hint quizá visible en móvil) | BAJA | `globals.css` | ✅ Resuelto 2026-08-14: se quitó `display` de la regla unlayered; verificado en runtime (360 → `none`, ≥768 → `flex`, reduced-motion → `none`) |
+| 6 | Verificación manual en dev server con tenant demo pendiente (entorno QA no disponible en el ciclo) | BAJA | — | ✅ Resuelto 2026-08-14: QA runtime en `localhost:3001` con `barberia-el-clasico` (ver `reports/2026-08-14_cierre-adr016-ui-dashboards_iter1.md`) |
 
 ---
 

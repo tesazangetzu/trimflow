@@ -1,0 +1,101 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - complementary [ref=f3e3]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]:
+          - generic [ref=f3e7]: T
+          - generic [ref=f3e8]: TRIMFLOW
+        - navigation [ref=f3e9]:
+          - generic [ref=f3e10]:
+            - generic [ref=f3e11]: MENU
+            - list [ref=f3e12]:
+              - listitem [ref=f3e13]:
+                - link "Dashboard" [ref=f3e14] [cursor=pointer]:
+                  - /url: /admin/dashboard
+              - listitem [ref=f3e21]:
+                - link "Sucursales" [ref=f3e22] [cursor=pointer]:
+                  - /url: /admin/branches
+              - listitem [ref=f3e28]:
+                - link "Barbers" [ref=f3e29] [cursor=pointer]:
+                  - /url: /admin/barbers
+              - listitem [ref=f3e43]:
+                - link "Servicios" [ref=f3e44] [cursor=pointer]:
+                  - /url: /admin/services
+              - listitem [ref=f3e52]:
+                - link "Horarios" [ref=f3e53] [cursor=pointer]:
+                  - /url: /admin/schedules
+              - listitem [ref=f3e57]:
+                - link "Clientes" [ref=f3e58] [cursor=pointer]:
+                  - /url: /admin/customers
+          - generic [ref=f3e65]:
+            - generic [ref=f3e66]: OTHERS
+            - list [ref=f3e67]:
+              - listitem [ref=f3e68]:
+                - link "Citas" [ref=f3e69] [cursor=pointer]:
+                  - /url: /admin/appointments
+              - listitem [ref=f3e74]:
+                - link "Landing" [ref=f3e75] [cursor=pointer]:
+                  - /url: /admin/landing
+        - generic [ref=f3e84]:
+          - generic [ref=f3e85]: A
+          - generic [ref=f3e87]:
+            - paragraph [ref=f3e88]: Admin
+            - paragraph [ref=f3e89]: Admin
+          - button "Cerrar sesión" [ref=f3e90]
+    - generic [ref=f3e91]:
+      - banner [ref=f3e92]:
+        - generic [ref=f3e93]:
+          - button "Colapsar barra lateral" [ref=f3e94] [cursor=pointer]
+          - button "Buscar..." [ref=f3e95] [cursor=pointer]:
+            - generic [ref=f3e97]: ⌘K
+        - generic [ref=f3e98]:
+          - 'button "Cambiar tema (actual: system)" [ref=f3e99] [cursor=pointer]'
+          - button "Notificaciones" [ref=f3e100] [cursor=pointer]:
+            - generic [ref=f3e104]: "2"
+          - button "A Admin" [ref=f3e105] [cursor=pointer]:
+            - generic [ref=f3e106]: A
+            - generic [ref=f3e108]:
+              - paragraph
+              - paragraph [ref=f3e109]: Admin
+      - main [ref=f3e112]:
+        - generic [ref=f3e113]:
+          - heading "Panel de Administración" [level=5] [ref=f3e114]
+          - paragraph [ref=f3e115]: Home / Admin / Panel
+        - generic [ref=f3e116]:
+          - generic [ref=f3e117]:
+            - heading "Sucursales" [level=1] [ref=f3e125]
+            - button "Nueva Sucursal" [ref=f3e126]
+          - table [ref=f3e133]:
+            - rowgroup [ref=f3e134]:
+              - row [ref=f3e135]:
+                - columnheader [ref=f3e136]
+                - columnheader [ref=f3e138]
+                - columnheader [ref=f3e140]
+                - columnheader [ref=f3e142]
+            - rowgroup [ref=f3e144]:
+              - row [ref=f3e145]:
+                - cell [ref=f3e146]
+                - cell [ref=f3e150]
+                - cell [ref=f3e153]
+                - cell [ref=f3e156]
+              - row [ref=f3e159]:
+                - cell [ref=f3e160]
+                - cell [ref=f3e164]
+                - cell [ref=f3e167]
+                - cell [ref=f3e170]
+              - row [ref=f3e173]:
+                - cell [ref=f3e174]
+                - cell [ref=f3e178]
+                - cell [ref=f3e181]
+                - cell [ref=f3e184]
+              - row [ref=f3e187]:
+                - cell [ref=f3e188]
+                - cell [ref=f3e192]
+                - cell [ref=f3e195]
+                - cell [ref=f3e198]
+              - row [ref=f3e201]:
+                - cell [ref=f3e202]
+                - cell [ref=f3e206]
+                - cell [ref=f3e209]
+                - cell [ref=f3e212]
+  - button "Open Next.js Dev Tools" [ref=f3e220] [cursor=pointer]

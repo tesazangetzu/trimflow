@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Building2, Pencil, Lock, Unlock, ExternalLink } from "lucide-react"
+import { Building2, Pencil, Ban, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -176,7 +176,7 @@ export default function TenantsPage() {
                                 disabled={actionId === tenant.id}
                                 aria-label={isSuspended ? "Activar tenant" : "Suspender tenant"}
                               >
-                                {isSuspended ? <Unlock className="size-4" /> : <Lock className="size-4" />}
+                                <Ban className="size-4" />
                               </Button>
                             }
                           />

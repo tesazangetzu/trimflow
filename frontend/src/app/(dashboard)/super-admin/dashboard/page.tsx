@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AlertTriangle, Building2, CheckCircle2, Lock, Pencil, Unlock } from "lucide-react"
+import { AlertTriangle, Building2, CheckCircle2, Pencil, Ban } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -284,11 +284,7 @@ const statusDonut = [
                                 onClick={() => handleToggle(tenant)}
                                 aria-label={tenant.status === "suspended" ? "Activar tenant" : "Suspender tenant"}
                               >
-                                {tenant.status === "suspended" ? (
-                                  <Unlock className="size-4" />
-                                ) : (
-                                  <Lock className="size-4" />
-                                )}
+                                <Ban className="size-4" />
                               </Button>
                             }
                           />

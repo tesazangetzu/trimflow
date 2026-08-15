@@ -1,5 +1,10 @@
 import api from "@/lib/axios"
-import type { Tenant, CreateTenantDto, UpdateTenantDto } from "@/types/tenant"
+import type { MyTenant, Tenant, CreateTenantDto, UpdateTenantDto } from "@/types/tenant"
+
+export async function getMyTenant(): Promise<MyTenant> {
+  const { data } = await api.get("/tenants/me")
+  return data
+}
 
 export async function getAll(): Promise<Tenant[]> {
   const { data } = await api.get("/tenants")

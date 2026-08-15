@@ -1,5 +1,10 @@
 export type TenantStatus = "active" | "suspended" | "trial"
 
+export interface MyTenant {
+  id: string
+  name: string
+}
+
 export interface Tenant {
   id: string
   name: string

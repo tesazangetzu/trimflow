@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { CSSProperties } from "react"
 import { ChevronDown } from "lucide-react"
 import type { LandingConfig } from "@/types/landing"
@@ -21,10 +21,13 @@ interface LandingHeroProps {
 
 export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }: LandingHeroProps) {
   const bodyRef = useRef<HTMLElement>(null)
+  const [imgError, setImgError] = useState(false)
   const { presentation, branding } = config
   const ticker = presentation.tickerItems?.length
     ? presentation.tickerItems
     : LANDING_DEFAULTS.presentation.tickerItems
+
+  const showHeroImage = hasHeroImage && branding.heroImageUrl && !imgError
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
@@ -38,8 +41,9 @@ export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }:
       className="landing-hero relative flex min-h-[100svh] flex-col overflow-hidden"
       style={{ background: "var(--landing-hero-bg, #0A0A0A)" }}
     >
-      {/* Imagen de fondo (opcional): full-bleed velada + scrim hacia --landing-bg */}
-      {hasHeroImage && branding.heroImageUrl && (
+      {/* Imagen de fondo (opcional): full-bleed velada + scrim hacia --landing-bg.
+          Si la URL falla al cargar (onError), se oculta y se muestra el fallback. */}
+      {showHeroImage && branding.heroImageUrl && (
         <div className="pointer-events-none absolute inset-0">
           <Image
             src={branding.heroImageUrl}
@@ -49,6 +53,7 @@ export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }:
             className="object-cover opacity-35"
             sizes="100vw"
             priority
+            onError={() => setImgError(true)}
           />
           <div
             className="absolute inset-0"
@@ -59,7 +64,7 @@ export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }:
 
       {/* Fallback tipográfico/geométrico: hairlines doradas + numeral de índice.
           Sin imagen ni URLs inventadas. */}
-      {(!hasHeroImage || !branding.heroImageUrl) && (
+      {!showHeroImage && (
         <div className="landing-hero-fallback pointer-events-none absolute inset-0" aria-hidden />
       )}
 

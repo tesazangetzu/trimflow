@@ -83,6 +83,12 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 - [x] Ver citas pendientes, completadas, canceladas.
 - [x] Marcar cita como completada.
 
+### Nombre del tenant en el dashboard (ver ADR-017)
+
+- [x] Endpoint self-service `GET /v1/tenants/me` escopado por `tenantId` del token (roles admin/barber), devuelve `{ id, name }`.
+- [x] Hook frontend `useTenantName` con refetch en mount y focus (visibility/focus), sin petición si no hay `tenantId`.
+- [x] Sidebar de `DashboardShell` muestra el nombre del tenant bajo el brand label, con Skeleton mientras carga y oculto ante error.
+
 ### Dashboard de administrador
 
 - [x] Visión general del negocio (citas hoy, barbers activos).

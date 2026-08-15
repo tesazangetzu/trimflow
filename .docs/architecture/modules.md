@@ -36,6 +36,8 @@ src/
 │
 ├── modules/
 │   ├── tenants/                    # Gestión de tenants (Super Admin)
+│   │   │                           #   + self-service GET /v1/tenants/me (roles admin/barber,
+│   │   │                           #     scoped por tenantId del token; ver ADR-017)
 │   │   ├── __tests__/
 │   │   ├── entities/
 │   │   ├── services/
@@ -253,8 +255,8 @@ src/
       landing-theme.ts    #   landingThemeVars: paleta dark luxury sobre los 6 tokens --landing-* (ADR-013/015; composición editorial ADR-016)
     booking/              # BookingWizard + ReservationPage (flujo de reserva pública) + WIZARD_TOKENS scoped
   lib/                    # Utilidades compartidas
-  services/               # Clientes API (por módulo): landing.service.ts, etc.
-  hooks/                  # Custom hooks
-  types/                  # Tipos TypeScript compartidos (landing.ts, public.ts)
+  services/               # Clientes API (por módulo): landing.service.ts, tenants.service.ts (getMyTenant → /tenants/me, ver ADR-017), etc.
+  hooks/                  # Custom hooks (use-auth, use-tenant-name — nombre del tenant en sidebar, refetch en mount/focus, ver ADR-017)
+  types/                  # Tipos TypeScript compartidos (landing.ts, public.ts, tenant.ts — MyTenant, ver ADR-017)
   __tests__/              # Pruebas
 ```

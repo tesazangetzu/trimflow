@@ -6,6 +6,8 @@ import { UpdateTenantDto } from '../dto/update-tenant.dto';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
 import { Roles } from '../../../shared/decorators/roles.decorator';
+import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
+import { MyTenantResponseDto } from '../dto/my-tenant-response.dto';
 
 @ApiTags('Tenants')
 @ApiBearerAuth()
@@ -26,6 +28,20 @@ export class TenantController {
   @ApiOperation({ summary: 'Listar tenants' })
   findAll() {
     return this.tenantService.findAll();
+  }
+
+  @Get('me')
+  @Roles('admin', 'barber')
+  @ApiOperation({
+    summary: 'Obtener el tenant propio',
+    description: 'Devuelve { id, name } del tenant del token. Solo Admin y Barber.',
+  })
+  async findMyTenant(@CurrentUser('tenantId') tenantId?: string): Promise<MyTenantResponseDto> {
+    const tenant = await this.tenantService.findMyTenant(tenantId!);
+    const dto = new MyTenantResponseDto();
+    dto.id = tenant.id;
+    dto.name = tenant.name;
+    return dto;
   }
 
   @Get(':id')

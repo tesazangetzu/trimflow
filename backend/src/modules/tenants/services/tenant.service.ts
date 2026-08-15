@@ -73,6 +73,15 @@ export class TenantService implements ITenantService {
     return this.findOne(id);
   }
 
+  async findMyTenant(tenantId: string): Promise<Tenant> {
+    const tenant = await this.tenantRepository.findOne({ where: { id: tenantId } });
+    if (!tenant) {
+      throw new EntityNotFoundException(`Tenant with id "${tenantId}" not found`);
+    }
+    this.logger.log(`Tenant looked up for self: ${tenantId}`);
+    return tenant;
+  }
+
   async findBySlug(slug: string): Promise<Tenant | null> {
     return this.tenantRepository.findOne({ where: { slug } });
   }

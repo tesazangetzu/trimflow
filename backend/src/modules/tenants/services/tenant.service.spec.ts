@@ -158,6 +158,26 @@ describe('TenantService', () => {
     });
   });
 
+  describe('findMyTenant', () => {
+    it('should return the tenant resolved by id', async () => {
+      tenantRepository.findOne.mockResolvedValue(mockTenant);
+
+      const result = await service.findMyTenant(mockTenant.id);
+
+      expect(tenantRepository.findOne).toHaveBeenCalledWith({
+        where: { id: mockTenant.id },
+      });
+      expect(result).toEqual(mockTenant);
+      expect(mockLogger.log).toHaveBeenCalledWith(`Tenant looked up for self: ${mockTenant.id}`);
+    });
+
+    it('should throw EntityNotFoundException when not found', async () => {
+      tenantRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.findMyTenant('nonexistent-id')).rejects.toThrow(EntityNotFoundException);
+    });
+  });
+
   describe('update', () => {
     const updateDto: UpdateTenantDto = { name: 'Nuevo Nombre' };
 

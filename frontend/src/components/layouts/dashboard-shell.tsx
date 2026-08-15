@@ -5,10 +5,12 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Bell, ChevronDown, List, LogOut, Menu } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { useTenantName } from "@/hooks/use-tenant-name"
 import { CommandPalette } from "@/components/layouts/command-palette"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +44,7 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const [collapsed, setCollapsed] = useState(false)
   const { user, logout } = useAuth()
+  const { tenantName, loading: tenantLoading, error: tenantError } = useTenantName(user?.tenantId)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -114,9 +117,22 @@ export function DashboardShell({
           {brandLabel.charAt(0).toUpperCase()}
         </div>
         {!isCollapsed && (
-          <span className="text-[13px] font-bold tracking-wide text-sidebar-primary-foreground">
-            {brandLabel}
-          </span>
+          <div className="flex min-w-0 flex-1 flex-col justify-center pb-0.5">
+            <span className="text-[13px] font-bold leading-none tracking-wide text-sidebar-primary-foreground">
+              {brandLabel}
+            </span>
+            {user?.tenantId && (
+              <>
+                {tenantLoading ? (
+                  <Skeleton className="mt-1.5 h-3 w-20" />
+                ) : tenantError || !tenantName ? null : (
+                  <span className="mt-1 max-w-full truncate text-xs font-normal text-sidebar-foreground">
+                    {tenantName}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
         )}
       </div>
       {nav(isCollapsed)}

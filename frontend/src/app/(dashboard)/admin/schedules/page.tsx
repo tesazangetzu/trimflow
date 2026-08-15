@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import { Clock, CalendarDays, AlertCircle, Pencil, Plus, Check, X, Trash2, User, Users, Coffee } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
@@ -84,6 +85,7 @@ export default function AdminSchedulesPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const [formDayOfWeek, setFormDayOfWeek] = useState(1)
+  const [formDays, setFormDays] = useState<number[]>([1])
   const [formStartTime, setFormStartTime] = useState("09:00")
   const [formEndTime, setFormEndTime] = useState("18:00")
   const [formBreakStartTime, setFormBreakStartTime] = useState("")
@@ -116,6 +118,7 @@ export default function AdminSchedulesPage() {
     setEditSchedules([...barber.schedules])
     setEditingScheduleId(null)
     setFormDayOfWeek(1)
+    setFormDays([1])
     setFormStartTime("09:00")
     setFormEndTime("18:00")
     setFormBreakStartTime("")
@@ -128,6 +131,7 @@ export default function AdminSchedulesPage() {
   const resetForm = () => {
     setEditingScheduleId(null)
     setFormDayOfWeek(1)
+    setFormDays([1])
     setFormStartTime("09:00")
     setFormEndTime("18:00")
     setFormBreakStartTime("")
@@ -147,9 +151,20 @@ export default function AdminSchedulesPage() {
     setFormError("")
   }
 
+  const toggleDay = (day: number) => {
+    setFormDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editBarber) return
+
+    if (!editingScheduleId && formDays.length === 0) {
+      setFormError("Selecciona al menos un día")
+      return
+    }
 
     if (formStartTime >= formEndTime) {
       setFormError("La hora de inicio debe ser anterior a la de fin")
@@ -188,15 +203,19 @@ export default function AdminSchedulesPage() {
           isActive: formIsActive,
         })
       } else {
-        await schedulesService.create({
-          barberId: editBarber.id,
-          dayOfWeek: formDayOfWeek,
-          startTime: formStartTime,
-          endTime: formEndTime,
-          breakStartTime,
-          breakEndTime,
-          isActive: formIsActive,
-        })
+        await Promise.all(
+          formDays.map((day) =>
+            schedulesService.create({
+              barberId: editBarber.id,
+              dayOfWeek: day,
+              startTime: formStartTime,
+              endTime: formEndTime,
+              breakStartTime,
+              breakEndTime,
+              isActive: formIsActive,
+            }),
+          ),
+        )
       }
       const updated = await schedulesService.getAll(editBarber.id)
       setEditSchedules(updated)
@@ -348,7 +367,7 @@ export default function AdminSchedulesPage() {
 
       {/* Dialog editor */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="flex max-h-[calc(100vh-4rem)] max-w-2xl flex-col overflow-hidden shadow-dialog">
+        <DialogContent className="flex max-h-[calc(100vh-4rem)] max-w-[820px] flex-col overflow-hidden shadow-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="flex size-7 items-center justify-center rounded bg-primary/10">
@@ -371,22 +390,49 @@ export default function AdminSchedulesPage() {
                 {editingScheduleId ? "Editar horario" : "Agregar nuevo horario"}
               </div>
 
-              {/* Row 1: Día | Inicio | Fin */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="admin-day" className="text-xs">Día</Label>
-                  <select
-                    id="admin-day"
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    value={formDayOfWeek}
-                    onChange={(e) => setFormDayOfWeek(Number(e.target.value))}
-                    disabled={!!editingScheduleId}
-                  >
+              {/* Días (solo modo crear) */}
+              {!editingScheduleId && (
+                <div className="mb-3">
+                  <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <CalendarDays className="size-3.5" />
+                    Días de la semana
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 md:grid-cols-7">
                     {DAY_NAMES.map((d) => (
-                      <option key={d.value} value={d.value}>{d.label}</option>
+                      <div
+                        key={d.value}
+                        className="flex items-center gap-2 rounded-md border border-input bg-background/60 px-3 py-2"
+                      >
+                        <Checkbox
+                          id={`admin-day-${d.value}`}
+                          checked={formDays.includes(d.value)}
+                          onCheckedChange={() => toggleDay(d.value)}
+                        />
+                        <Label htmlFor={`admin-day-${d.value}`} className="cursor-pointer text-xs">{DAY_SHORT[d.value]}</Label>
+                      </div>
                     ))}
-                  </select>
+                  </div>
                 </div>
+              )}
+
+              {/* Horario: Inicio | Fin | Break inicio | Break fin (o Día + estos 4 en edición) */}
+              <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${editingScheduleId ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
+                {editingScheduleId && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="admin-day" className="text-xs">Día</Label>
+                    <select
+                      id="admin-day"
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      value={formDayOfWeek}
+                      onChange={(e) => setFormDayOfWeek(Number(e.target.value))}
+                      disabled={!!editingScheduleId}
+                    >
+                      {DAY_NAMES.map((d) => (
+                        <option key={d.value} value={d.value}>{d.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="space-y-1.5">
                   <Label htmlFor="admin-start" className="text-xs">Inicio</Label>
                   <Input
@@ -409,35 +455,25 @@ export default function AdminSchedulesPage() {
                     className="h-9"
                   />
                 </div>
-              </div>
-
-              {/* Row 2: Refrigerio (break) inicio | fin */}
-              <div className="mt-3 rounded-md border border-dashed border-border bg-background/60 p-3">
-                <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Coffee className="size-3.5" />
-                  Refrigerio (opcional)
+                <div className="space-y-1.5">
+                  <Label htmlFor="admin-break-start" className="text-xs">Inicio refrigerio</Label>
+                  <Input
+                    id="admin-break-start"
+                    type="time"
+                    value={formBreakStartTime}
+                    onChange={(e) => setFormBreakStartTime(e.target.value)}
+                    className="h-9"
+                  />
                 </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="admin-break-start" className="text-xs">Inicio refrigerio</Label>
-                    <Input
-                      id="admin-break-start"
-                      type="time"
-                      value={formBreakStartTime}
-                      onChange={(e) => setFormBreakStartTime(e.target.value)}
-                      className="h-9"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="admin-break-end" className="text-xs">Fin refrigerio</Label>
-                    <Input
-                      id="admin-break-end"
-                      type="time"
-                      value={formBreakEndTime}
-                      onChange={(e) => setFormBreakEndTime(e.target.value)}
-                      className="h-9"
-                    />
-                  </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="admin-break-end" className="text-xs">Fin refrigerio</Label>
+                  <Input
+                    id="admin-break-end"
+                    type="time"
+                    value={formBreakEndTime}
+                    onChange={(e) => setFormBreakEndTime(e.target.value)}
+                    className="h-9"
+                  />
                 </div>
               </div>
 

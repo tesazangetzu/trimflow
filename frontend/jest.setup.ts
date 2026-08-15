@@ -9,6 +9,21 @@ if (typeof ResizeObserver === "undefined") {
 }
 
 if (typeof window !== "undefined") {
+  if (!window.PointerEvent) {
+    class MockPointerEvent extends MouseEvent {
+      pointerId: number
+      pointerType: string
+      isPrimary: boolean
+      constructor(type: string, params: MouseEventInit & { pointerId?: number; pointerType?: string; isPrimary?: boolean } = {}) {
+        super(type, params)
+        this.pointerId = params.pointerId ?? 0
+        this.pointerType = params.pointerType ?? "mouse"
+        this.isPrimary = params.isPrimary ?? true
+      }
+    }
+    Object.defineProperty(window, "PointerEvent", { writable: true, value: MockPointerEvent })
+  }
+
   if (!window.matchMedia) {
     Object.defineProperty(window, "matchMedia", {
       writable: true,

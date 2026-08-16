@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import SchedulesPage from "@/app/(dashboard)/admin/schedules/page"
 import * as barbersService from "@/services/barbers.service"
@@ -22,6 +22,7 @@ const mockedBarbersGetAll = jest.mocked(barbersService.getAll)
 const mockedSchedulesGetAll = jest.mocked(schedulesService.getAll)
 const mockedCreate = jest.mocked(schedulesService.create)
 const mockedUpdate = jest.mocked(schedulesService.update)
+const mockedRemove = jest.mocked(schedulesService.remove)
 
 const barber: Barber = {
   id: "b1",
@@ -54,6 +55,23 @@ const renderWithData = async () => {
   return user
 }
 
+const renderWithManyBarbers = async (count: number) => {
+  const user = userEvent
+  const manyBarbers: Barber[] = Array.from({ length: count }, (_, i) => ({
+    id: `b${i}`,
+    name: `Barber ${i + 1}`,
+    email: `barber${i + 1}@example.com`,
+    branchId: "br1",
+    createdAt: "",
+    updatedAt: "",
+  }))
+  mockedBarbersGetAll.mockResolvedValue(manyBarbers)
+  mockedSchedulesGetAll.mockResolvedValue([])
+  render(<SchedulesPage />)
+  await screen.findByText("Barber 1")
+  return user
+}
+
 describe("SchedulesPage", () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -75,7 +93,7 @@ describe("SchedulesPage", () => {
     mockedCreate.mockResolvedValue(schedule)
     const user = await renderWithData()
 
-    await user.click(screen.getByText("Juan Pérez"))
+    await user.click(screen.getByRole("button", { name: "Editar horarios de Juan Pérez" }))
     expect(screen.getByRole("dialog")).toBeInTheDocument()
 
     const lunesCheckbox = screen.getByRole("checkbox", { name: "Lun" })
@@ -92,16 +110,26 @@ describe("SchedulesPage", () => {
     expect(mockedCreate).toHaveBeenNthCalledWith(2, expect.objectContaining({ dayOfWeek: 2 }))
   })
 
+  it("abre el modal en modo edición al hacer click en el tag del horario", async () => {
+    mockedUpdate.mockResolvedValue(schedule)
+    const user = await renderWithData()
+
+    await user.click(screen.getByRole("button", { name: "Lun 09:00-18:00" }))
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+
+    expect(screen.queryByRole("checkbox", { name: "Lun" })).not.toBeInTheDocument()
+    const daySelect = screen.getByLabelText("Día")
+    expect(daySelect).toBeDisabled()
+    expect(daySelect).toHaveValue("1")
+  })
+
   it("bloquea el día en edición y llama a update una sola vez", async () => {
     mockedUpdate.mockResolvedValue(schedule)
     const user = await renderWithData()
 
-    await user.click(screen.getByText("Juan Pérez"))
+    await user.click(screen.getByRole("button", { name: "Lun 09:00-18:00" }))
     expect(screen.getByRole("dialog")).toBeInTheDocument()
 
-    await user.click(screen.getByRole("button", { name: "Editar" }))
-
-    expect(screen.queryByRole("checkbox", { name: "Lun" })).not.toBeInTheDocument()
     const daySelect = screen.getByLabelText("Día")
     expect(daySelect).toBeDisabled()
 
@@ -115,7 +143,7 @@ describe("SchedulesPage", () => {
   it("muestra error si no se selecciona ningún día al crear", async () => {
     const user = await renderWithData()
 
-    await user.click(screen.getByText("Juan Pérez"))
+    await user.click(screen.getByRole("button", { name: "Editar horarios de Juan Pérez" }))
     expect(screen.getByRole("dialog")).toBeInTheDocument()
 
     const lunesCheckbox = screen.getByRole("checkbox", { name: "Lun" })
@@ -125,5 +153,68 @@ describe("SchedulesPage", () => {
 
     expect(await screen.findByText("Selecciona al menos un día")).toBeInTheDocument()
     expect(mockedCreate).not.toHaveBeenCalled()
+  })
+
+  it("filtra por nombre y email y resetea la página", async () => {
+    const user = await renderWithManyBarbers(6)
+    expect(screen.getByText("Página 1 de 2")).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Siguiente" }))
+    expect(screen.getByText("Página 2 de 2")).toBeInTheDocument()
+
+    const searchInput = screen.getByPlaceholderText("Buscar por nombre o email...")
+    await user.type(searchInput, "barber")
+
+    expect(screen.getByText("Página 1 de 2")).toBeInTheDocument()
+    expect(screen.getByText("Barber 1")).toBeInTheDocument()
+
+    await user.clear(searchInput)
+    await user.type(searchInput, "barber 3")
+
+    expect(screen.getByText("Barber 3")).toBeInTheDocument()
+    expect(screen.queryByText("Barber 1")).not.toBeInTheDocument()
+    expect(screen.queryByText("Barber 2")).not.toBeInTheDocument()
+    expect(screen.queryByText(/Página \d+ de \d+/)).not.toBeInTheDocument()
+
+    await user.clear(searchInput)
+    await user.type(searchInput, "barber5@example.com")
+
+    expect(screen.getByText("Barber 5")).toBeInTheDocument()
+    expect(screen.queryByText("Barber 3")).not.toBeInTheDocument()
+  })
+
+  it("muestra el paginado solo con más de 5 barbers", async () => {
+    const user = await renderWithManyBarbers(5)
+    expect(screen.queryByText(/Página \d+ de \d+/)).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Siguiente" })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Editar horarios de Barber 1" }))
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+  })
+
+  it("elimina un horario desde el modal en modo edición", async () => {
+    mockedRemove.mockResolvedValue(undefined)
+    const user = await renderWithData()
+
+    await user.click(screen.getByRole("button", { name: "Lun 09:00-18:00" }))
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Eliminar" }))
+
+    expect(mockedRemove).toHaveBeenCalledWith("sch-1")
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    })
+  })
+
+  it("no muestra la tabla de horarios configurados en el modal", async () => {
+    const user = await renderWithData()
+
+    await user.click(screen.getByRole("button", { name: "Editar horarios de Juan Pérez" }))
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+
+    expect(screen.queryByText("Horarios configurados")).not.toBeInTheDocument()
+    expect(screen.queryByRole("table")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Cerrar" })).not.toBeInTheDocument()
   })
 })

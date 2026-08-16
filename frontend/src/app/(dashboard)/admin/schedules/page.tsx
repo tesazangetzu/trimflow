@@ -1,13 +1,12 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { Clock, CalendarDays, AlertCircle, Pencil, Plus, Check, X, Trash2, User, Users, Coffee } from "lucide-react"
+import { Clock, CalendarDays, AlertCircle, Pencil, Plus, Check, X, Trash2, User, Users, Search } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import {
   Card,
   CardContent,
@@ -19,18 +18,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
 import * as barbersService from "@/services/barbers.service"
@@ -48,6 +38,7 @@ const DAY_NAMES = [
   { value: 6, label: "Sábado" },
 ]
 const DAY_SHORT = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+const PAGE_SIZE = 5
 
 interface BarberWithSchedule extends Barber {
   schedules: Schedule[]
@@ -80,8 +71,10 @@ export default function AdminSchedulesPage() {
   const [barbers, setBarbers] = useState<BarberWithSchedule[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [searchTerm, setSearchTerm] = useState("")
+  const [page, setPage] = useState(0)
+
   const [editBarber, setEditBarber] = useState<BarberWithSchedule | null>(null)
-  const [editSchedules, setEditSchedules] = useState<Schedule[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const [formDayOfWeek, setFormDayOfWeek] = useState(1)
@@ -115,7 +108,6 @@ export default function AdminSchedulesPage() {
 
   const openEditor = (barber: BarberWithSchedule) => {
     setEditBarber(barber)
-    setEditSchedules([...barber.schedules])
     setEditingScheduleId(null)
     setFormDayOfWeek(1)
     setFormDays([1])
@@ -140,7 +132,8 @@ export default function AdminSchedulesPage() {
     setFormError("")
   }
 
-  const startEdit = (schedule: Schedule) => {
+  const startEdit = (barber: BarberWithSchedule, schedule: Schedule) => {
+    setEditBarber(barber)
     setEditingScheduleId(schedule.id)
     setFormDayOfWeek(schedule.dayOfWeek)
     setFormStartTime(schedule.startTime.slice(0, 5))
@@ -149,6 +142,7 @@ export default function AdminSchedulesPage() {
     setFormBreakEndTime(schedule.breakEndTime?.slice(0, 5) ?? "")
     setFormIsActive(schedule.isActive)
     setFormError("")
+    setDialogOpen(true)
   }
 
   const toggleDay = (day: number) => {
@@ -218,7 +212,6 @@ export default function AdminSchedulesPage() {
         )
       }
       const updated = await schedulesService.getAll(editBarber.id)
-      setEditSchedules(updated)
       setBarbers((prev) =>
         prev.map((b) => (b.id === editBarber.id ? { ...b, schedules: updated } : b)),
       )
@@ -234,15 +227,37 @@ export default function AdminSchedulesPage() {
     await schedulesService.remove(scheduleId)
     if (editBarber) {
       const updated = await schedulesService.getAll(editBarber.id)
-      setEditSchedules(updated)
       setBarbers((prev) =>
         prev.map((b) => (b.id === editBarber.id ? { ...b, schedules: updated } : b)),
       )
     }
   }
 
+  const handleDeleteFromForm = async () => {
+    if (!editingScheduleId) return
+    try {
+      await handleDeleteSchedule(editingScheduleId)
+      resetForm()
+      setDialogOpen(false)
+    } catch {
+      setFormError("Error al eliminar. Intenta de nuevo.")
+    }
+  }
+
   const totalBarbersWithSchedule = barbers.filter((b) => b.schedules.length > 0).length
   const totalSchedules = barbers.reduce((acc, b) => acc + b.schedules.length, 0)
+
+  const filteredBarbers = barbers.filter(
+    (b) =>
+      b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.email.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+  const totalPages = Math.max(1, Math.ceil(filteredBarbers.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages - 1)
+  const paginatedBarbers = filteredBarbers.slice(
+    safePage * PAGE_SIZE,
+    safePage * PAGE_SIZE + PAGE_SIZE,
+  )
 
   return (
     <div className="space-y-6">
@@ -297,77 +312,136 @@ export default function AdminSchedulesPage() {
           </AlertDescription>
         </Alert>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {barbers.map((barber) => (
-            <Card
-              key={barber.id}
-              className="group cursor-pointer shadow-card transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5"
-              onClick={() => openEditor(barber)}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-                      <User className="size-5 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{barber.name}</CardTitle>
-                      <CardDescription className="text-xs">{barber.email}</CardDescription>
-                    </div>
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value)
+                setPage(0)
+              }}
+              placeholder="Buscar por nombre o email..."
+              aria-label="Buscar barbers por nombre o email"
+              className="pl-9"
+            />
+          </div>
+
+          {filteredBarbers.length === 0 ? (
+            <Alert>
+              <div className="flex size-9 items-center justify-center rounded-full bg-muted">
+                <AlertCircle className="size-5" />
+              </div>
+              <AlertTitle>Sin resultados</AlertTitle>
+              <AlertDescription>
+                No se encontraron barbers con ese criterio de búsqueda.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {paginatedBarbers.map((barber) => (
+                  <Card key={barber.id} className="shadow-card">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
+                            <User className="size-5 text-primary" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base">{barber.name}</CardTitle>
+                            <CardDescription className="text-xs">{barber.email}</CardDescription>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={barber.schedules.length > 0 ? "default" : "outline"}
+                            className="transition-colors text-xs"
+                          >
+                            {barber.schedules.length > 0
+                              ? `${barber.schedules.length} día${barber.schedules.length !== 1 ? "s" : ""}`
+                              : "Sin horarios"}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7"
+                            aria-label={`Editar horarios de ${barber.name}`}
+                            onClick={() => openEditor(barber)}
+                          >
+                            <Pencil className="size-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {barber.schedules.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {barber.schedules
+                            .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+                            .map((s) => (
+                              <Button
+                                key={s.id}
+                                type="button"
+                                variant={s.isActive ? "secondary" : "outline"}
+                                size="sm"
+                                className="h-6 gap-1 rounded-4xl px-2.5 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  startEdit(barber, s)
+                                }}
+                              >
+                                <Clock className="size-3" />
+                                {DAY_SHORT[s.dayOfWeek]}{" "}
+                                {s.startTime.slice(0, 5)}-{s.endTime.slice(0, 5)}
+                              </Button>
+                            ))}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <AlertCircle className="size-4" />
+                          <span>Sin horario configurado</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    Página {safePage + 1} de {totalPages}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={safePage === 0}
+                      onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    >
+                      Anterior
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={safePage >= totalPages - 1}
+                      onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                    >
+                      Siguiente
+                    </Button>
                   </div>
-                  <Badge
-                    variant={barber.schedules.length > 0 ? "default" : "outline"}
-                    className="transition-colors text-xs"
-                  >
-                    {barber.schedules.length > 0
-                      ? `${barber.schedules.length} día${barber.schedules.length !== 1 ? "s" : ""}`
-                      : "Sin horarios"}
-                  </Badge>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {barber.schedules.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    {barber.schedules
-                      .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-                      .map((s) => (
-                        <Badge
-                          key={s.id}
-                          variant={s.isActive ? "secondary" : "outline"}
-                          className="gap-1 px-2.5 py-1 text-xs"
-                        >
-                          <Clock className="size-3" />
-                          {DAY_SHORT[s.dayOfWeek]}{" "}
-                          {s.startTime.slice(0, 5)}-{s.endTime.slice(0, 5)}
-                        </Badge>
-                      ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <AlertCircle className="size-4" />
-                    <span>Sin horario — haz clic para configurar</span>
-                  </div>
-                )}
-                <div className="mt-3 flex items-center justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-xs opacity-0 transition-all group-hover:opacity-100"
-                    onClick={(e) => { e.stopPropagation(); openEditor(barber) }}
-                  >
-                    <Pencil className="size-3.5" />
-                    Editar horarios
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+              )}
+            </>
+          )}
         </div>
       )}
 
       {/* Dialog editor */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="flex max-h-[calc(100vh-4rem)] max-w-[820px] flex-col overflow-hidden shadow-dialog">
+        <DialogContent maxWidth="sm:max-w-[1000px]" className="flex max-h-[calc(100vh-4rem)] flex-col overflow-hidden shadow-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="flex size-7 items-center justify-center rounded bg-primary/10">
@@ -477,8 +551,20 @@ export default function AdminSchedulesPage() {
                 </div>
               </div>
 
-              {/* Row 3: Active toggle + action buttons */}
+              {/* Row 3: Eliminar (solo edición) + Active toggle + action buttons */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
+                {editingScheduleId && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="h-9 gap-1.5"
+                    onClick={handleDeleteFromForm}
+                  >
+                    <Trash2 className="size-3.5" />
+                    Eliminar
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant={formIsActive ? "default" : "outline"}
@@ -506,96 +592,7 @@ export default function AdminSchedulesPage() {
 
               {formError && <p className="mt-2 text-xs text-destructive">{formError}</p>}
             </form>
-
-            <Separator />
-
-            {/* Schedules table */}
-            <div>
-              <h4 className="mb-3 text-sm font-medium">Horarios configurados</h4>
-              {editSchedules.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-muted">
-                    <Clock className="size-6 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm font-medium">No hay horarios configurados</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Usa el formulario de arriba para agregar un horario
-                  </p>
-                </div>
-              ) : (
-                <div className="rounded-lg border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-muted/30">
-                        <TableHead>Día</TableHead>
-                        <TableHead>Horario</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead className="w-20 text-right">Acción</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {editSchedules
-                        .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-                        .map((s) => (
-                          <TableRow key={s.id} className="group transition-colors hover:bg-muted/20">
-                            <TableCell className="font-medium">{DAY_NAMES[s.dayOfWeek].label}</TableCell>
-                            <TableCell className="font-mono text-sm">
-                              <div className="flex flex-col gap-0.5">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex size-6 items-center justify-center rounded bg-primary/10">
-                                    <Clock className="size-3.5 text-primary" />
-                                  </div>
-                                  {s.startTime.slice(0, 5)} — {s.endTime.slice(0, 5)}
-                                </div>
-                                {s.breakStartTime && s.breakEndTime && (
-                                  <div className="flex items-center gap-1.5 pl-8 text-xs text-muted-foreground">
-                                    <Coffee className="size-3" />
-                                    Refrigerio {s.breakStartTime.slice(0, 5)} — {s.breakEndTime.slice(0, 5)}
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={s.isActive ? "default" : "secondary"} className="text-xs">
-                                {s.isActive ? "Activo" : "Inactivo"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-7 opacity-60 transition-all hover:opacity-100"
-                                  onClick={() => startEdit(s)}
-                                >
-                                  <Pencil className="size-3.5" />
-                                  <span className="sr-only">Editar</span>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-7 text-muted-foreground hover:text-destructive"
-                                  onClick={() => handleDeleteSchedule(s.id)}
-                                >
-                                  <Trash2 className="size-3.5" />
-                                  <span className="sr-only">Eliminar</span>
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </div>
           </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cerrar
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

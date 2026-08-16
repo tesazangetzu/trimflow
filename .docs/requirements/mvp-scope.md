@@ -29,6 +29,7 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 
 - [x] CRUD de barbers asociados a sucursales.
 - [x] Asignar horarios/bloques de trabajo a barbers.
+- [x] Máximo 1 registro de horario por día de la semana y por barbero (7 días = máx 7 registros, ver ADR-018). Crear un día ya registrado lanza error de regla de negocio; editar actualiza el registro existente.
 
 ### Gestión de servicios (Administrator)
 

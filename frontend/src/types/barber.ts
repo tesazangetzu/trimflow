@@ -1,3 +1,5 @@
+import type { Schedule } from "./schedule"
+
 export interface Barber {
   id: string
   name: string
@@ -7,6 +9,7 @@ export interface Barber {
   createdAt: string
   updatedAt: string
   deletedAt?: string
+  schedules?: Schedule[]
 }
 
 export interface CreateBarberDto {

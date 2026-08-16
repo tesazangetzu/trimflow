@@ -85,6 +85,10 @@ describe('ScheduleService', () => {
       breakEndTime: '13:00',
     };
 
+    beforeEach(() => {
+      scheduleRepository.findOne.mockResolvedValue(null);
+    });
+
     it('should create a schedule with a valid break', async () => {
       const result = await service.create({ ...validDto });
       expect(scheduleRepository.create).toHaveBeenCalled();
@@ -144,12 +148,63 @@ describe('ScheduleService', () => {
     });
   });
 
+  describe('create (uniqueness)', () => {
+    const validDto: CreateScheduleDto = {
+      barberId: 'barber-uuid-1',
+      dayOfWeek: 1,
+      startTime: '09:00',
+      endTime: '18:00',
+      breakStartTime: '12:00',
+      breakEndTime: '13:00',
+    };
+
+    it('should throw BusinessRuleViolation when a schedule already exists for the same barber and day', async () => {
+      scheduleRepository.findOne.mockResolvedValue({ ...baseSchedule, dayOfWeek: 1 } as Schedule);
+      await expect(service.create({ ...validDto })).rejects.toThrow(BusinessRuleViolation);
+      expect(scheduleRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should include the day in the violation message', async () => {
+      scheduleRepository.findOne.mockResolvedValue(baseSchedule);
+      await expect(service.create({ ...validDto })).rejects.toThrow(
+        'Barber barber-uuid-1 already has a schedule for day 1',
+      );
+    });
+
+    it('should not throw when the existing schedule is for a different day', async () => {
+      scheduleRepository.findOne.mockImplementation((options?: unknown) => {
+        const where = (options as { where?: { dayOfWeek?: number } })?.where;
+        return where?.dayOfWeek === 1
+          ? Promise.resolve(null)
+          : Promise.resolve({ ...baseSchedule, dayOfWeek: 2 } as Schedule);
+      });
+      const result = await service.create({ ...validDto });
+      expect(scheduleRepository.save).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should treat soft-deleted schedules as free for the day', async () => {
+      scheduleRepository.findOne.mockResolvedValue(null);
+      const result = await service.create({ ...validDto });
+      expect(scheduleRepository.save).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+  });
+
   describe('update (validateBreak)', () => {
     it('should update a schedule with a valid break', async () => {
       jest.spyOn(service, 'findOne').mockResolvedValue(baseSchedule);
       const dto: UpdateScheduleDto = { breakStartTime: '12:30', breakEndTime: '13:30' };
       const result = await service.update('schedule-uuid-1', dto);
       expect(scheduleRepository.save).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should update without a duplicate-day check (create-only rule)', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue(baseSchedule);
+      const dto: UpdateScheduleDto = { startTime: '10:00' };
+      const result = await service.update('schedule-uuid-1', dto);
+      expect(scheduleRepository.findOne).not.toHaveBeenCalled();
       expect(result).toBeDefined();
     });
 

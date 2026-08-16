@@ -1,8 +1,8 @@
 import api from "@/lib/axios"
 import type { Barber, CreateBarberDto, UpdateBarberDto } from "@/types/barber"
 
-export async function getAll(branchId?: string): Promise<Barber[]> {
-  const params = branchId ? { branchId } : {}
+export async function getAll(branchId?: string, schedule?: boolean): Promise<Barber[]> {
+  const params = { ...(branchId ? { branchId } : {}), ...(schedule ? { schedule: "true" } : {}) }
   const { data } = await api.get("/barbers", { params })
   return data
 }

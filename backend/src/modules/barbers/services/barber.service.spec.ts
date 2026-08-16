@@ -95,6 +95,39 @@ describe('BarberService', () => {
       );
       expect(result).toHaveLength(1);
     });
+
+    it('should load only the branch relation by default', async () => {
+      barberRepository.find.mockResolvedValue([mockBarber]);
+      await service.findAll();
+      expect(barberRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({ relations: ['branch'] }),
+      );
+    });
+
+    it('should load schedules relation when includeSchedules is true and sort them', async () => {
+      const barberWithSchedules = {
+        ...mockBarber,
+        schedules: [
+          { id: 's3', dayOfWeek: 3, startTime: '10:00:00' },
+          { id: 's1', dayOfWeek: 1, startTime: '12:00:00' },
+          { id: 's2', dayOfWeek: 1, startTime: '09:00:00' },
+        ],
+      } as Barber;
+      barberRepository.find.mockResolvedValue([barberWithSchedules]);
+      const result = await service.findAll('branch-uuid-1', true);
+      expect(barberRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({ relations: ['branch', 'schedules'] }),
+      );
+      expect(result[0].schedules.map((s) => s.id)).toEqual(['s2', 's1', 's3']);
+    });
+
+    it('should not include schedules relation when includeSchedules is false', async () => {
+      barberRepository.find.mockResolvedValue([mockBarber]);
+      await service.findAll('branch-uuid-1', false);
+      expect(barberRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({ relations: ['branch'] }),
+      );
+    });
   });
 
   describe('findOne', () => {

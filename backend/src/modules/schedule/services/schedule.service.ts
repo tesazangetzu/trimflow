@@ -48,6 +48,12 @@ export class ScheduleService implements IScheduleService {
 
   async create(dto: CreateScheduleDto): Promise<Schedule> {
     this.validateBreak(dto.startTime, dto.endTime, dto.breakStartTime, dto.breakEndTime);
+    const existing = await this.scheduleRepository.findOne({
+      where: { barberId: dto.barberId, dayOfWeek: dto.dayOfWeek },
+    });
+    if (existing) {
+      throw new BusinessRuleViolation(`Barber ${dto.barberId} already has a schedule for day ${dto.dayOfWeek}`);
+    }
     const schedule = this.scheduleRepository.create(dto);
     const saved = await this.scheduleRepository.save(schedule);
     this.logger.log(`Schedule created: ${saved.id} for barber ${dto.barberId}`);

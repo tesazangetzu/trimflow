@@ -90,13 +90,8 @@ export default function AdminSchedulesPage() {
 
   const loadAll = useCallback(async () => {
     setLoading(true)
-    const allBarbers = await barbersService.getAll()
-    const withSchedules = await Promise.all(
-      allBarbers.map(async (b) => {
-        const schedules = await schedulesService.getAll(b.id)
-        return { ...b, schedules }
-      }),
-    )
+    const allBarbers = await barbersService.getAll(undefined, true)
+    const withSchedules = allBarbers.map((b) => ({ ...b, schedules: b.schedules ?? [] }))
     setBarbers(withSchedules)
     setLoading(false)
   }, [])

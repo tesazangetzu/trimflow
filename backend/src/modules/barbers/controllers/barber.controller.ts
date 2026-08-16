@@ -24,8 +24,8 @@ export class BarberController {
   @Get()
   @Roles('super-admin', 'admin', 'barber')
   @ApiOperation({ summary: 'Listar barberos' })
-  findAll(@Query('branchId') branchId?: string) {
-    return this.barberService.findAll(branchId);
+  findAll(@Query('branchId') branchId?: string, @Query('schedule') schedule?: string) {
+    return this.barberService.findAll(branchId, schedule === 'true');
   }
 
   @Get(':id')

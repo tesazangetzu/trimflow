@@ -48,7 +48,7 @@ const schedule: Schedule = {
 
 const renderWithData = async () => {
   const user = userEvent
-  mockedBarbersGetAll.mockResolvedValue([barber])
+  mockedBarbersGetAll.mockResolvedValue([{ ...barber, schedules: [schedule] }])
   mockedSchedulesGetAll.mockResolvedValue([schedule])
   render(<SchedulesPage />)
   await screen.findByText("Juan Pérez")
@@ -64,6 +64,7 @@ const renderWithManyBarbers = async (count: number) => {
     branchId: "br1",
     createdAt: "",
     updatedAt: "",
+    schedules: [],
   }))
   mockedBarbersGetAll.mockResolvedValue(manyBarbers)
   mockedSchedulesGetAll.mockResolvedValue([])
@@ -216,5 +217,14 @@ describe("SchedulesPage", () => {
     expect(screen.queryByText("Horarios configurados")).not.toBeInTheDocument()
     expect(screen.queryByRole("table")).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Cerrar" })).not.toBeInTheDocument()
+  })
+
+  it("hace una sola llamada con schedules al montar y no dispara el N+1", async () => {
+    mockedBarbersGetAll.mockResolvedValue([{ ...barber, schedules: [schedule] }])
+    render(<SchedulesPage />)
+    await screen.findByText("Juan Pérez")
+
+    expect(mockedBarbersGetAll).toHaveBeenCalledWith(undefined, true)
+    expect(mockedSchedulesGetAll).not.toHaveBeenCalled()
   })
 })

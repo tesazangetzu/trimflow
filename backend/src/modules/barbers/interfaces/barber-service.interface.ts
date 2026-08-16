@@ -4,7 +4,7 @@ import { UpdateBarberDto } from '../dto/update-barber.dto';
 
 export interface IBarberService {
   create(createBarberDto: CreateBarberDto): Promise<Barber>;
-  findAll(branchId?: string): Promise<Barber[]>;
+  findAll(branchId?: string, includeSchedules?: boolean): Promise<Barber[]>;
   findOne(id: string): Promise<Barber>;
   findByBranch(branchId: string): Promise<Barber[]>;
   update(id: string, updateBarberDto: UpdateBarberDto): Promise<Barber>;

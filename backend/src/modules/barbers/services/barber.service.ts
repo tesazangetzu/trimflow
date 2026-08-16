@@ -25,9 +25,20 @@ export class BarberService implements IBarberService {
     return saved;
   }
 
-  async findAll(branchId?: string): Promise<Barber[]> {
+  async findAll(branchId?: string, includeSchedules = false): Promise<Barber[]> {
     const where = branchId ? { branchId } : {};
-    return this.barberRepository.find({ where, relations: ['branch'] });
+    const barbers = await this.barberRepository.find({
+      where,
+      relations: includeSchedules ? ['branch', 'schedules'] : ['branch'],
+    });
+    if (includeSchedules) {
+      for (const barber of barbers) {
+        barber.schedules = barber.schedules.sort(
+          (a, b) => a.dayOfWeek - b.dayOfWeek || a.startTime.localeCompare(b.startTime),
+        );
+      }
+    }
+    return barbers;
   }
 
   async findOne(id: string): Promise<Barber> {

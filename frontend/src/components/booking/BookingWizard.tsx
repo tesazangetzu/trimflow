@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { usePublicData } from "@/hooks/booking/use-public-data"
-import { useBooking, type WizardService } from "@/hooks/booking/use-booking"
+import { useBooking, type BookingStep, type WizardService } from "@/hooks/booking/use-booking"
 import { useAvailability } from "@/hooks/booking/use-availability"
 import { SelectService } from "@/components/booking/steps/SelectService"
 import { SelectBarber } from "@/components/booking/steps/SelectBarber"
@@ -56,12 +56,27 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
   const [leavingStep, setLeavingStep] = useState<string | null>(null)
   const prevStepRef = useRef<string | null>(null)
 
+  // Dispara la clase `is-closing` tras el montaje de la carcasa para que el
+  // colapso por grid-rows arranque desde la altura real del contenido.
+  const [closing, setClosing] = useState(false)
+
+  useEffect(() => {
+    if (!leavingStep) return
+    const raf = requestAnimationFrame(() =>
+      requestAnimationFrame(() => setClosing(true)),
+    )
+    return () => cancelAnimationFrame(raf)
+  }, [leavingStep])
+
   useEffect(() => {
     const prev = prevStepRef.current
     prevStepRef.current = booking.step
     if (prev && prev !== booking.step && (EDITABLE_STEPS as readonly string[]).includes(prev)) {
       setLeavingStep(prev)
-      const t = setTimeout(() => setLeavingStep(null), 300)
+      const t = setTimeout(() => {
+        setLeavingStep(null)
+        setClosing(false)
+      }, 300)
       return () => clearTimeout(t)
     }
   }, [booking.step])
@@ -166,6 +181,74 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
     }
   }
 
+  const renderStepContent = (step: BookingStep) => {
+    switch (step) {
+      case "service":
+        return (
+          <SelectService
+            services={services}
+            selectedService={booking.selectedService}
+            canProceed={booking.canProceed}
+            onSelect={booking.handleSelectService}
+            onNext={booking.nextStep}
+          />
+        )
+
+      case "barber":
+        return (
+          <SelectBarber
+            barbers={barbers}
+            selectedBarber={booking.selectedBarber}
+            canProceed={booking.canProceed}
+            onSelect={booking.handleSelectBarber}
+            onPrev={booking.prevStep}
+            onNext={booking.nextStep}
+          />
+        )
+
+      case "date":
+        return (
+          <SelectDate
+            selectedDate={booking.selectedDate}
+            selectedSlot={booking.selectedSlot}
+            slots={availability.slots}
+            slotsLoading={availability.loading}
+            slotsError={availability.error}
+            canProceed={booking.canProceed}
+            onSelectDate={booking.handleSelectDate}
+            onSelectSlot={booking.handleSelectSlot}
+            onPrev={booking.prevStep}
+            onNext={booking.nextStep}
+          />
+        )
+
+      case "checkout":
+        return (
+          <Checkout
+            selectedService={booking.selectedService!}
+            selectedBarber={booking.selectedBarber!}
+            selectedDate={booking.selectedDate}
+            selectedSlot={booking.selectedSlot}
+            name={booking.name}
+            phone={booking.phone}
+            email={booking.email}
+            lookupLoading={booking.lookupLoading}
+            saveEnabled={booking.canProceed}
+            submitting={booking.submitting}
+            error={booking.error}
+            onNameChange={booking.setName}
+            onPhoneChange={booking.setPhone}
+            onEmailChange={booking.setEmail}
+            onPrev={booking.prevStep}
+            onSubmit={booking.handleSubmit}
+          />
+        )
+
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
       <header className="mb-6 text-center">
@@ -243,7 +326,11 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
             <div
               aria-hidden
               className="landing-wizard-form-exit rounded-2xl border border-border bg-card p-6 shadow-sm"
-            />
+            >
+              <div className={cn("landing-wizard-collapse", closing && "is-closing")}>
+                {renderStepContent(leavingStep as BookingStep)}
+              </div>
+            </div>
           )}
 
           {summaries.map((s) => (
@@ -261,62 +348,7 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
             key={booking.step}
             className="landing-wizard-form rounded-2xl border border-border bg-card p-6 shadow-sm"
           >
-            {booking.step === "service" && (
-              <SelectService
-                services={services}
-                selectedService={booking.selectedService}
-                canProceed={booking.canProceed}
-                onSelect={booking.handleSelectService}
-                onNext={booking.nextStep}
-              />
-            )}
-
-            {booking.step === "barber" && (
-              <SelectBarber
-                barbers={barbers}
-                selectedBarber={booking.selectedBarber}
-                canProceed={booking.canProceed}
-                onSelect={booking.handleSelectBarber}
-                onPrev={booking.prevStep}
-                onNext={booking.nextStep}
-              />
-            )}
-
-            {booking.step === "date" && (
-              <SelectDate
-                selectedDate={booking.selectedDate}
-                selectedSlot={booking.selectedSlot}
-                slots={availability.slots}
-                slotsLoading={availability.loading}
-                slotsError={availability.error}
-                canProceed={booking.canProceed}
-                onSelectDate={booking.handleSelectDate}
-                onSelectSlot={booking.handleSelectSlot}
-                onPrev={booking.prevStep}
-                onNext={booking.nextStep}
-              />
-            )}
-
-            {booking.step === "checkout" && (
-              <Checkout
-                selectedService={booking.selectedService!}
-                selectedBarber={booking.selectedBarber!}
-                selectedDate={booking.selectedDate}
-                selectedSlot={booking.selectedSlot}
-                name={booking.name}
-                phone={booking.phone}
-                email={booking.email}
-                lookupLoading={booking.lookupLoading}
-                saveEnabled={booking.canProceed}
-                submitting={booking.submitting}
-                error={booking.error}
-                onNameChange={booking.setName}
-                onPhoneChange={booking.setPhone}
-                onEmailChange={booking.setEmail}
-                onPrev={booking.prevStep}
-                onSubmit={booking.handleSubmit}
-              />
-            )}
+            {renderStepContent(booking.step)}
           </div>
         </div>
       )}

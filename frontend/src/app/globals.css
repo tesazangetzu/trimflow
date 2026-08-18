@@ -381,22 +381,31 @@ html {
   }
 }
 
-/* Carcasa de salida del paso completado: colapsa y sube ligeramente para
-   "transformarse" en la card resumen apilada (morph form→card). */
+/* Carcasa de salida del paso completado: colapsa de forma continua (grid-rows)
+   y se desvanece para "transformarse" en la card resumen apilada (morph form→card). */
 .landing-wizard-form-exit {
-  animation: landing-wizard-out 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: landing-wizard-exit-fade 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-@keyframes landing-wizard-out {
+@keyframes landing-wizard-exit-fade {
   from {
     opacity: 1;
-    transform: none;
-    max-height: 1000px;
   }
   to {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-    max-height: 0;
   }
+}
+.landing-wizard-collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+  min-height: 0;
+  overflow: hidden;
+  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.landing-wizard-collapse > * {
+  min-height: 0;
+}
+.landing-wizard-collapse.is-closing {
+  grid-template-rows: 0fr;
 }
 
 /* Entrada del resumen apilado que sustituye al form colapsado. */
@@ -646,7 +655,10 @@ html {
     animation: none;
     opacity: 1;
     transform: none;
-    max-height: none;
+  }
+  .landing-wizard-collapse {
+    transition: none;
+    grid-template-rows: 0fr;
   }
   .landing-reveal {
     transition: none;

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useToastManager } from "@/components/ui/toast"
 import * as barbersService from "@/services/barbers.service"
 import * as schedulesService from "@/services/schedules.service"
 import type { Barber } from "@/types/barber"
@@ -68,6 +69,7 @@ function StatCard({ label, value, icon: Icon, gradient = false }: {
 }
 
 export default function AdminSchedulesPage() {
+  const { add } = useToastManager()
   const [barbers, setBarbers] = useState<BarberWithSchedule[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -210,6 +212,14 @@ export default function AdminSchedulesPage() {
       setBarbers((prev) =>
         prev.map((b) => (b.id === editBarber.id ? { ...b, schedules: updated } : b)),
       )
+      add({
+        title: editingScheduleId ? "Horario actualizado" : "Horario creado",
+        description: editingScheduleId
+          ? "El horario se guardó correctamente."
+          : "El horario se agregó correctamente.",
+        type: "success",
+      })
+      setDialogOpen(false)
       resetForm()
     } catch {
       setFormError("Error al guardar. Intenta de nuevo.")

@@ -42,8 +42,12 @@ function BranchFormContent({
   const [name, setName] = useState(entity?.name ?? "")
   const [address, setAddress] = useState(entity?.address ?? "")
   const [phone, setPhone] = useState(entity?.phone ?? "")
-  const [openingTime, setOpeningTime] = useState(entity?.openingTime ?? "")
-  const [closingTime, setClosingTime] = useState(entity?.closingTime ?? "")
+  const [openingTime, setOpeningTime] = useState(
+    entity?.openingTime ? entity.openingTime.slice(0, 5) : "",
+  )
+  const [closingTime, setClosingTime] = useState(
+    entity?.closingTime ? entity.closingTime.slice(0, 5) : "",
+  )
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 

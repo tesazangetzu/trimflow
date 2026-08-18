@@ -381,6 +381,39 @@ html {
   }
 }
 
+/* Carcasa de salida del paso completado: colapsa y sube ligeramente para
+   "transformarse" en la card resumen apilada (morph form→card). */
+.landing-wizard-form-exit {
+  animation: landing-wizard-out 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes landing-wizard-out {
+  from {
+    opacity: 1;
+    transform: none;
+    max-height: 1000px;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    max-height: 0;
+  }
+}
+
+/* Entrada del resumen apilado que sustituye al form colapsado. */
+.landing-wizard-summary-in {
+  animation: landing-wizard-summary-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes landing-wizard-summary-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ── Landing editorial (ADR-016) ──
    Composición editorial de la landing `/[slug]`: escalas clamp(), eyebrows,
    índices mono, hairlines y listas numeradas en sustitución de las cajas
@@ -552,6 +585,21 @@ html {
   }
 }
 
+/* Botón flotante «Volver arriba» (ADR-015/016): circular, fondo surface, borde
+   dorado tenue e icono dorado; en hover se rellena de dorado (mismo patrón que
+   .landing-card-link). Entra con fade + rise cuando supera el umbral de scroll. */
+.landing-scroll-top-button {
+  background: var(--landing-surface);
+  border: 1px solid color-mix(in srgb, var(--landing-accent) 30%, transparent);
+  color: var(--landing-accent);
+  transition: background-color 0.25s ease, color 0.25s ease;
+  animation: landing-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.landing-scroll-top-button:hover {
+  background: var(--landing-accent);
+  color: var(--landing-bg);
+}
+
 /* Scroll reveal (IntersectionObserver, Fase 4). */
 .landing-reveal {
   opacity: 0;
@@ -582,10 +630,23 @@ html {
   .landing-page {
     scroll-behavior: auto;
   }
+  .landing-scroll-top-button {
+    transition: none;
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
   .landing-wizard-form {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+  .landing-wizard-form-exit,
+  .landing-wizard-summary-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    max-height: none;
   }
   .landing-reveal {
     transition: none;

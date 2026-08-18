@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import SchedulesPage from "@/app/(dashboard)/admin/schedules/page"
+import { Toaster } from "@/components/ui/toast"
 import * as barbersService from "@/services/barbers.service"
 import * as schedulesService from "@/services/schedules.service"
 import type { Barber } from "@/types/barber"
@@ -50,7 +51,7 @@ const renderWithData = async () => {
   const user = userEvent
   mockedBarbersGetAll.mockResolvedValue([{ ...barber, schedules: [schedule] }])
   mockedSchedulesGetAll.mockResolvedValue([schedule])
-  render(<SchedulesPage />)
+  render(<Toaster><SchedulesPage /></Toaster>)
   await screen.findByText("Juan Pérez")
   return user
 }
@@ -68,7 +69,7 @@ const renderWithManyBarbers = async (count: number) => {
   }))
   mockedBarbersGetAll.mockResolvedValue(manyBarbers)
   mockedSchedulesGetAll.mockResolvedValue([])
-  render(<SchedulesPage />)
+  render(<Toaster><SchedulesPage /></Toaster>)
   await screen.findByText("Barber 1")
   return user
 }
@@ -80,7 +81,7 @@ describe("SchedulesPage", () => {
 
   it("muestra el skeleton mientras carga", () => {
     mockedBarbersGetAll.mockReturnValue(new Promise(() => {}))
-    const { container } = render(<SchedulesPage />)
+    const { container } = render(<Toaster><SchedulesPage /></Toaster>)
     expect(container.querySelector('[data-slot="skeleton"]')).toBeInTheDocument()
   })
 
@@ -221,7 +222,7 @@ describe("SchedulesPage", () => {
 
   it("hace una sola llamada con schedules al montar y no dispara el N+1", async () => {
     mockedBarbersGetAll.mockResolvedValue([{ ...barber, schedules: [schedule] }])
-    render(<SchedulesPage />)
+    render(<Toaster><SchedulesPage /></Toaster>)
     await screen.findByText("Juan Pérez")
 
     expect(mockedBarbersGetAll).toHaveBeenCalledWith(undefined, true)

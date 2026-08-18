@@ -9,6 +9,7 @@ import { LandingGallery } from "@/components/landing/LandingGallery"
 import { LandingStats } from "@/components/landing/LandingStats"
 import { LandingCTA } from "@/components/landing/LandingCTA"
 import { LandingFooter } from "@/components/landing/LandingFooter"
+import { ScrollToTopButton } from "@/components/landing/ScrollToTopButton"
 import { landingThemeVars } from "@/components/landing/landing-theme"
 import { LANDING_DEFAULTS, type LandingConfig } from "@/types/landing"
 
@@ -56,6 +57,8 @@ export function LandingPage({ slug }: { slug: string }) {
       {config.sections.booking && <LandingCTA slug={slug} shopName={shop.name} />}
 
       <LandingFooter shopName={shop.name} slug={slug} branches={shop.branches} />
+
+      <ScrollToTopButton />
     </div>
   )
 }

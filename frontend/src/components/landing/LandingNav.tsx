@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
 import { useActiveSection } from "@/hooks/landing/use-active-section"
@@ -46,6 +47,15 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
 
   const close = () => setOpen(false)
 
+  const pathname = usePathname()
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === `/${slug}`) {
+      e.preventDefault()
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+    close()
+  }
+
   return (
     <nav
       className={`landing-nav sticky top-0 z-40 border-b ${open ? "is-open" : ""} ${scrolled ? "is-scrolled" : ""}`}
@@ -56,7 +66,7 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
         style={{ transform: `scaleX(${progress})`, opacity: progress > 0.01 ? 1 : 0 }}
       />
       <div className="mx-auto flex h-12 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href={`/${slug}`} className="group flex items-center gap-2.5" onClick={close}>
+        <Link href={`/${slug}`} className="group flex items-center gap-2.5" onClick={handleLogoClick}>
           <span className="landing-pole block h-5 w-1.5" aria-hidden />
           <span
             className="text-xs font-semibold uppercase tracking-[0.2em]"

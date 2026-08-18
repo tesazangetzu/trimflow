@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { usePublicData } from "@/hooks/booking/use-public-data"
 import { useBooking, type WizardService } from "@/hooks/booking/use-booking"
 import { useAvailability } from "@/hooks/booking/use-availability"
@@ -49,6 +49,22 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
   const [activeBranchId, setActiveBranchId] = useState<string | null>(null)
 
   const booking = useBooking(slug)
+
+  // Paso editable que acaba de abandonarse: mientras esté activo, se muestra una
+  // "carcasa" con el chrome de la card que colapsa (morph form→card) antes de
+  // aparecer el resumen apilado del paso. Se limpia con un timeout ≥ duración.
+  const [leavingStep, setLeavingStep] = useState<string | null>(null)
+  const prevStepRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const prev = prevStepRef.current
+    prevStepRef.current = booking.step
+    if (prev && prev !== booking.step && (EDITABLE_STEPS as readonly string[]).includes(prev)) {
+      setLeavingStep(prev)
+      const t = setTimeout(() => setLeavingStep(null), 300)
+      return () => clearTimeout(t)
+    }
+  }, [booking.step])
 
   const activeBranch: PublicBranch | null = useMemo(() => {
     if (!resolvedShop || resolvedShop.branches.length === 0) return null
@@ -223,14 +239,22 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
         </div>
       ) : (
         <div className="space-y-3">
-          {summaries.map((s) => (
-            <BookingStepSummary
-              key={s.step}
-              label={s.label}
-              value={s.value}
-              meta={s.meta}
-              onClick={() => booking.setStep(s.step)}
+          {leavingStep && (
+            <div
+              aria-hidden
+              className="landing-wizard-form-exit rounded-2xl border border-border bg-card p-6 shadow-sm"
             />
+          )}
+
+          {summaries.map((s) => (
+            <div key={s.step} className="landing-wizard-summary-in">
+              <BookingStepSummary
+                label={s.label}
+                value={s.value}
+                meta={s.meta}
+                onClick={() => booking.setStep(s.step)}
+              />
+            </div>
           ))}
 
           <div

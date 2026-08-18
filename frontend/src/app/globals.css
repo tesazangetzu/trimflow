@@ -272,8 +272,23 @@
    No afectan al dashboard. */
 
 .landing-page {
-  scroll-behavior: smooth;
   overflow-x: clip;
+}
+
+/* El scroll del documento ocurre en `html`/`body`, no en `.landing-page`.
+   Aplicar smooth aquí hace que los anclas de la navbar (LandingNav) deslicen
+   en lugar de saltar. No afecta al dashboard. */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Colchón para que las secciones ancladas no queden bajo la navbar sticky
+   (h-12 = 48px + ~16px de aire → 64px). */
+#servicios,
+#equipo,
+#horarios,
+#ubicacion {
+  scroll-margin-top: 64px;
 }
 
 @keyframes landing-marquee {
@@ -348,6 +363,22 @@
 .landing-card-link:hover {
   background-color: var(--landing-accent);
   color: var(--landing-bg);
+}
+
+/* Wizard de reserva (Fase 6, cards apiladas): entrada del form del paso activo
+   con fade + traslación suave (mismo easing editorial que ADR-015/016). */
+.landing-wizard-form {
+  animation: landing-wizard-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes landing-wizard-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ── Landing editorial (ADR-016) ──
@@ -545,8 +576,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .landing-page {
     scroll-behavior: auto;
+  }
+  .landing-wizard-form {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
   .landing-reveal {
     transition: none;

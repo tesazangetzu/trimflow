@@ -9,6 +9,7 @@ import { SelectBarber } from "@/components/booking/steps/SelectBarber"
 import { SelectDate } from "@/components/booking/steps/SelectDate"
 import { Checkout } from "@/components/booking/steps/Checkout"
 import { Success } from "@/components/booking/steps/Success"
+import { BookingStepSummary } from "@/components/booking/BookingStepSummary"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { PublicBranch, PublicShop } from "@/types/public"
@@ -19,6 +20,27 @@ const STEP_LABELS: Record<string, string> = {
   date: "Fecha y hora",
   checkout: "Tus datos",
   success: "Confirmación",
+}
+
+// Orden editable del wizard (excluye `success`, que es pantalla final).
+const EDITABLE_STEPS = ["service", "barber", "date", "checkout"] as const
+
+function formatPrice(value: number): string {
+  return new Intl.NumberFormat("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+function formatDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-")
+  const date = new Date(Number(y), Number(m) - 1, Number(d))
+  return new Intl.DateTimeFormat("es-CL", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  }).format(date)
 }
 
 export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: PublicShop }) {
@@ -97,6 +119,37 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
 
   const stepIndex = ["service", "barber", "date", "checkout", "success"].indexOf(booking.step)
 
+  // Cards resumen: pasos completados anteriores al activo se compactan a resumen
+  // y quedan apilados arriba. El paso activo se muestra expandido (form) debajo.
+  const activeEditableIndex = EDITABLE_STEPS.indexOf(
+    booking.step as (typeof EDITABLE_STEPS)[number],
+  )
+  const summaries: Array<{
+    step: (typeof EDITABLE_STEPS)[number]
+    label: string
+    value: string
+    meta?: string
+  }> = []
+  for (const s of EDITABLE_STEPS) {
+    if (EDITABLE_STEPS.indexOf(s) >= activeEditableIndex) continue
+    if (s === "service" && booking.selectedService) {
+      summaries.push({
+        step: s,
+        label: STEP_LABELS[s],
+        value: booking.selectedService.name,
+        meta: formatPrice(booking.selectedService.price),
+      })
+    } else if (s === "barber" && booking.selectedBarber) {
+      summaries.push({ step: s, label: STEP_LABELS[s], value: booking.selectedBarber.name })
+    } else if (s === "date" && booking.selectedDate && booking.selectedSlot) {
+      summaries.push({
+        step: s,
+        label: STEP_LABELS[s],
+        value: `${formatDate(booking.selectedDate)} · ${booking.selectedSlot} hs`,
+      })
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
       <header className="mb-6 text-center">
@@ -155,75 +208,94 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
         </div>
       )}
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        {booking.step === "service" && (
-          <SelectService
-            services={services}
-            selectedService={booking.selectedService}
-            canProceed={booking.canProceed}
-            onSelect={booking.handleSelectService}
-            onNext={booking.nextStep}
-          />
-        )}
+      {booking.step === "success" ? (
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          {booking.appointment && (
+            <Success
+              appointment={booking.appointment}
+              shopName={resolvedShop.name}
+              branch={activeBranch}
+              selectedDate={booking.selectedDate}
+              selectedSlot={booking.selectedSlot}
+              slug={slug}
+            />
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {summaries.map((s) => (
+            <BookingStepSummary
+              key={s.step}
+              label={s.label}
+              value={s.value}
+              meta={s.meta}
+              onClick={() => booking.setStep(s.step)}
+            />
+          ))}
 
-        {booking.step === "barber" && (
-          <SelectBarber
-            barbers={barbers}
-            selectedBarber={booking.selectedBarber}
-            canProceed={booking.canProceed}
-            onSelect={booking.handleSelectBarber}
-            onPrev={booking.prevStep}
-            onNext={booking.nextStep}
-          />
-        )}
+          <div
+            key={booking.step}
+            className="landing-wizard-form rounded-2xl border border-border bg-card p-6 shadow-sm"
+          >
+            {booking.step === "service" && (
+              <SelectService
+                services={services}
+                selectedService={booking.selectedService}
+                canProceed={booking.canProceed}
+                onSelect={booking.handleSelectService}
+                onNext={booking.nextStep}
+              />
+            )}
 
-        {booking.step === "date" && (
-          <SelectDate
-            selectedDate={booking.selectedDate}
-            selectedSlot={booking.selectedSlot}
-            slots={availability.slots}
-            slotsLoading={availability.loading}
-            slotsError={availability.error}
-            canProceed={booking.canProceed}
-            onSelectDate={booking.handleSelectDate}
-            onSelectSlot={booking.handleSelectSlot}
-            onPrev={booking.prevStep}
-            onNext={booking.nextStep}
-          />
-        )}
+            {booking.step === "barber" && (
+              <SelectBarber
+                barbers={barbers}
+                selectedBarber={booking.selectedBarber}
+                canProceed={booking.canProceed}
+                onSelect={booking.handleSelectBarber}
+                onPrev={booking.prevStep}
+                onNext={booking.nextStep}
+              />
+            )}
 
-        {booking.step === "checkout" && (
-          <Checkout
-            selectedService={booking.selectedService!}
-            selectedBarber={booking.selectedBarber!}
-            selectedDate={booking.selectedDate}
-            selectedSlot={booking.selectedSlot}
-            name={booking.name}
-            phone={booking.phone}
-            email={booking.email}
-            lookupLoading={booking.lookupLoading}
-            saveEnabled={booking.canProceed}
-            submitting={booking.submitting}
-            error={booking.error}
-            onNameChange={booking.setName}
-            onPhoneChange={booking.setPhone}
-            onEmailChange={booking.setEmail}
-            onPrev={booking.prevStep}
-            onSubmit={booking.handleSubmit}
-          />
-        )}
+            {booking.step === "date" && (
+              <SelectDate
+                selectedDate={booking.selectedDate}
+                selectedSlot={booking.selectedSlot}
+                slots={availability.slots}
+                slotsLoading={availability.loading}
+                slotsError={availability.error}
+                canProceed={booking.canProceed}
+                onSelectDate={booking.handleSelectDate}
+                onSelectSlot={booking.handleSelectSlot}
+                onPrev={booking.prevStep}
+                onNext={booking.nextStep}
+              />
+            )}
 
-        {booking.step === "success" && booking.appointment && (
-          <Success
-            appointment={booking.appointment}
-            shopName={resolvedShop.name}
-            branch={activeBranch}
-            selectedDate={booking.selectedDate}
-            selectedSlot={booking.selectedSlot}
-            slug={slug}
-          />
-        )}
-      </div>
+            {booking.step === "checkout" && (
+              <Checkout
+                selectedService={booking.selectedService!}
+                selectedBarber={booking.selectedBarber!}
+                selectedDate={booking.selectedDate}
+                selectedSlot={booking.selectedSlot}
+                name={booking.name}
+                phone={booking.phone}
+                email={booking.email}
+                lookupLoading={booking.lookupLoading}
+                saveEnabled={booking.canProceed}
+                submitting={booking.submitting}
+                error={booking.error}
+                onNameChange={booking.setName}
+                onPhoneChange={booking.setPhone}
+                onEmailChange={booking.setEmail}
+                onPrev={booking.prevStep}
+                onSubmit={booking.handleSubmit}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

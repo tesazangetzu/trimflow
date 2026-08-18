@@ -1,22 +1,22 @@
 # Reporte Técnico Final
-## Morph suave form→card en el wizard de reserva
+## Eliminar el salto en el morph form→card del wizard de reserva (Iteración 2)
 
 > **Generado:** 2026-08-18
 > **Proyecto:** TrimFlow
 > **Stack:** Next.js 16.2.12 · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui
-> **Iteraciones realizadas:** 1
-> **Veredicto final:** APROBADO CON OBSERVACIONES
+> **Iteraciones realizadas:** 2
+> **Veredicto final:** APROBADO
 
 ---
 
 ## Objetivo confirmado
 
-Corregir el "salto" y hacer más natural/armonioso el morph form→card en el wizard de reserva (`/[slug]/reservar`).
+Eliminar el salto hacia arriba al hacer click en "Continuar" o al editar una sección en el wizard de reserva (`/[slug]/reservar`), haciendo el morph form→card natural y armónico.
 
 **Éxito cuando:**
 - No hay salto brusco al transformar el form en card resumen.
-- El colapso del form es suave y continuo (sin recorte brusco).
-- El scroll al cambiar de paso es natural, no "muy rápido".
+- El colapso es suave y continuo.
+- El scroll al cambiar de paso es natural.
 - Se respeta `prefers-reduced-motion` y el estilo dark luxury.
 
 **Fuera de alcance:** hook `useBooking`, steps del wizard, tipos, backend, otras vistas del dashboard.
@@ -27,73 +27,64 @@ Corregir el "salto" y hacer más natural/armonioso el morph form→card en el wi
 
 | Iteración | Veredicto del Auditor | Fallas que motivaron reiteración |
 |-----------|----------------------|----------------------------------|
-| 1         | APROBADO CON OBSERVACIONES | Ninguna (solo 2 fallas BAJA no bloqueantes) |
+| 1         | APROBADO CON OBSERVACIONES | El usuario reportó que el salto persistía |
+| 2         | APROBADO | — |
 
 ---
 
-## Causa raíz del problema
+## Causa raíz del problema (iteración 1)
 
-El "salto" al avanzar/quitar un paso en el wizard se debía a **tres causas**:
-
-1. **`max-height: 1000px → 0`** en la animación de salida `.landing-wizard-out`: `max-height` no es animable de forma suave — el navegador recorta el contenido bruscamente cuando el `max-height` baja de la altura real, y al final el contenido de abajo (el form nuevo) sube de golpe.
-2. **La carcasa `.landing-wizard-form-exit` era un `<div>` VACÍO**: como el form real se desmontaba instantáneamente por el `key={booking.step}`, el `max-height` sobre la carcasa vacía no colapsaba contenido real — la altura del form desaparecía de golpe.
-3. **`window.scrollTo({top:0, behavior:"smooth"})`** del hook `useBooking` (en `setStep`) combinado con la animación producía el efecto de "scroll rápido + salto".
+La iteración 1 implementó un colapso por `grid-template-rows` en la carcasa de salida, **pero la carcasa renderizaba el form COMPLETO del paso anterior** (`renderStepContent(leavingStep)`), que es ALTO (ej. `SelectService` con lista de servicios). Cuando ese form alto colapsaba a 0, la altura total de la sección bajaba bruscamente y el contenido de abajo (card resumen + form nuevo) subía de golpe → salto.
 
 ---
 
 ## Decisiones técnicas tomadas
 
-### Colapso por `grid-template-rows` (1fr → 0fr) en lugar de `max-height`
+### La carcasa colapsa el resumen compacto, no el form alto
 
 **Qué se decidió:**
-Reemplazar el hack `max-height: 1000px → 0` por una transición de `grid-template-rows: 1fr → 0fr` con `overflow: hidden` y `min-height: 0` en un contenedor `.landing-wizard-collapse`.
+La carcasa de salida dejó de montar el form completo del paso anterior. Ahora colapsa solo el **resumen compacto** (~60px) del paso saliente, extraído del contenido compartido de la card (`BookingStepSummaryContent`).
 
 **Por qué se tomó esta decisión:**
-`grid-template-rows` es la técnica moderna para colapsar contenido suavemente sin conocer la altura real. Es agnóstica a la altura y anima de forma continua, eliminando el recorte brusco del `max-height`.
+El salto venía de colapsar un form alto (~500px). Al colapsar un card compacto (~60px), el cambio de altura es mínimo y continuo → sin salto.
 
 **Alternativas descartadas:**
-- Medir la altura real con `ref` y animar `height`: más complejo y frágil ante cambios de contenido.
-- Mantener `max-height`: causa raíz del problema, no animable suavemente.
+- Mantener el form alto en la carcasa (iteración 1): causaba el salto.
+- Medir altura con ref: más complejo y frágil.
 
 **Impacto en .docs:**
 Ninguno.
 
 **Impacto en el código:**
-`globals.css` (`.landing-wizard-collapse`) y `BookingWizard.tsx` (carcasa con contenido real).
+`BookingStepSummary.tsx` (extracción de contenido compartido), `BookingWizard.tsx` (helper `buildSummary` + carcasa con resumen compacto).
 
-### La carcasa de salida envuelve el contenido real del paso saliente
+### Contenido compartido de la card reutilizable
 
 **Qué se decidió:**
-La carcasa `.landing-wizard-form-exit` dejó de ser un `<div>` vacío y ahora envuelve `renderStepContent(leavingStep)` dentro de `.landing-wizard-collapse`, de modo que la altura del form saliente se colapsa de forma continua (sin desmontaje instantáneo).
+Se extrajo el inner de la card a `BookingStepSummaryContent` (label/value/meta, sin `button`), usado tanto por el botón clickeable `BookingStepSummary` como por la carcasa de salida.
 
 **Por qué se tomó esta decisión:**
-El form real se desmontaba instantáneamente por el `key={booking.step}`, por lo que la altura desaparecía de golpe. Al mantener el contenido montado durante la salida, el colapso es continuo y el form entrante se cruza de forma armónica (morph real).
-
-**Alternativas descartadas:**
-- Carcasa vacía (estado anterior): no colapsaba contenido real, causaba el salto.
+Garantiza que el resumen que colapsa en la carcasa sea **idéntico** al card apilado, para un morph continuo sin duplicados confusos.
 
 **Impacto en .docs:**
 Ninguno.
 
 **Impacto en el código:**
-`BookingWizard.tsx` (extracción de `renderStepContent` + carcasa con contenido).
+`BookingStepSummary.tsx`.
 
-### Coordinación del scroll sin tocar el hook
+### Timing coordinado del morph
 
 **Qué se decidió:**
-No añadir JS para interceptar scroll. Se alineó la duración del colapso (~0.3s) con el desplazamiento suave nativo del navegador, de modo que la altura de la página cambia suavemente mientras el scroll asciende y ambos terminan juntos.
+El fade (0.3s) y el colapso (0.3s) de la carcasa terminan a la vez; el resumen apilado entra ~0.1s después (`animation-delay: 0.1s` en `.landing-wizard-summary-in`).
 
 **Por qué se tomó esta decisión:**
-El hook `useBooking` está restringido (solo lectura). El colapso por grid mantiene el contenido montado, evitando la caída instantánea de altura que el `scrollTo` amplificaba.
-
-**Alternativas descartadas:**
-- Editar el hook para consultar `matchMedia('(prefers-reduced-motion: reduce)')`: fuera de alcance (hook congelado).
+La card saliente se "disuelve" mientras la entrante aparece en el mismo slot vertical → continuidad visual.
 
 **Impacto en .docs:**
 Ninguno.
 
 **Impacto en el código:**
-`globals.css` (duraciones alineadas).
+`globals.css`.
 
 ---
 
@@ -103,8 +94,9 @@ Ninguno.
 
 | Archivo | Qué cambió | Por qué cambió |
 |---------|-----------|---------------|
-| `frontend/src/components/booking/BookingWizard.tsx` | Extracción de `renderStepContent`; carcasa de salida con contenido real; estado/efecto `closing` con doble rAF | Implementar el colapso continuo del form saliente |
-| `frontend/src/app/globals.css` | Colapso por grid en `.landing-wizard-collapse`; nuevo `@keyframes landing-wizard-exit-fade`; ajuste `prefers-reduced-motion` | Eliminar el `max-height` no animable y animar el colapso suavemente |
+| `frontend/src/components/booking/BookingStepSummary.tsx` | Extracción de `BookingStepSummaryContent` (inner sin `button`); `BookingStepSummary` lo envuelve en su `<button>` | Reutilizar el contenido de la card en la carcasa de salida |
+| `frontend/src/components/booking/BookingWizard.tsx` | Helper `buildSummary(step)`; refactor de `summaries`; carcasa colapsa el resumen compacto en vez del form alto | Eliminar el salto de altura |
+| `frontend/src/app/globals.css` | `animation-delay: 0.1s` en `.landing-wizard-summary-in` | Coordinar el timing del morph |
 
 ### Archivos eliminados
 
@@ -116,19 +108,19 @@ Ninguno.
 
 ### `frontend/src/components/booking/BookingWizard.tsx`
 
-**Antes:** La carcasa de salida era un `<div>` vacío con `max-height` que no colapsaba contenido real; el form se desmontaba instantáneamente por el `key={booking.step}`.
+**Antes:** La carcasa de salida montaba `renderStepContent(leavingStep)` (el form completo del paso anterior, alto), que colapsaba causando el salto.
 
-**Después:** El switch del form se extrajo a `renderStepContent(step)`. La carcasa `.landing-wizard-form-exit` envuelve `renderStepContent(leavingStep)` dentro de `.landing-wizard-collapse` (con clase `is-closing` condicional). El estado `closing` se dispara con doble `requestAnimationFrame` tras el montaje, iniciando el colapso suave por grid.
+**Después:** La carcasa calcula `leavingSummary = buildSummary(leavingStep)` y renderiza `<BookingStepSummaryContent {...leavingSummary} />` (o un placeholder `<div/>` mínimo) dentro de `.landing-wizard-collapse`. Padding `p-4`. Ya no monta los steps.
 
-**Por qué es importante:** Es el corazón del morph. Si se modifica sin entender el flujo, se puede romper la acumulación de cards o el re-expandir de pasos.
+**Por qué es importante:** Es el corazón del morph. La carcasa ahora colapsa un card compacto, eliminando el salto de altura.
 
-### `frontend/src/app/globals.css`
+### `frontend/src/components/booking/BookingStepSummary.tsx`
 
-**Antes:** `@keyframes landing-wizard-out` con `max-height: 1000px → 0` (no animable suavemente).
+**Antes:** Todo el card (inner + button) en un solo componente.
 
-**Después:** `@keyframes landing-wizard-exit-fade` (solo fade, 0.3s) + `.landing-wizard-collapse` con `grid-template-rows: 1fr → 0fr` y `transition` 0.3s. `prefers-reduced-motion` neutraliza todo.
+**Después:** `BookingStepSummaryContent` (inner, sin button) exportado y reutilizable; `BookingStepSummary` lo envuelve en su `<button>`.
 
-**Por qué es importante:** Define el colapso suave del form. Debe respetar `prefers-reduced-motion` y el lenguaje editorial de ADR-015/016.
+**Por qué es importante:** Permite que la carcasa muestre el mismo card que el summary apilado, para un morph continuo.
 
 ---
 
@@ -136,16 +128,19 @@ Ninguno.
 
 | Criterio | Estado | Evidencia |
 |----------|--------|-----------|
-| Helper `renderStepContent` reutilizable | Cumplido | `BookingWizard.tsx:184-250` |
-| Carcasa con contenido real (no div vacío) | Cumplido | `BookingWizard.tsx:325-334` |
-| Colapso por grid (sin max-height) | Cumplido | `globals.css:397-409` |
-| Estado `closing` con doble rAF | Cumplido | `BookingWizard.tsx:61-69` |
-| key={booking.step} conservado | Cumplido | `BookingWizard.tsx:348` |
-| prefers-reduced-motion neutraliza la técnica | Cumplido | `globals.css:648-662` |
-| Hook useBooking no modificado | Cumplido | `git diff` vacío |
+| `BookingStepSummaryContent` extraído y exportado | Cumplido | `BookingStepSummary.tsx:21-46` |
+| `BookingStepSummary` mantiene API y `onClick` | Cumplido | `BookingStepSummary.tsx:48-58` |
+| Helper `buildSummary(step)` | Cumplido | `BookingWizard.tsx:161-181` |
+| Carcasa colapsa resumen compacto, NO el form alto | Cumplido | `BookingWizard.tsx:343-356` |
+| Padding carcasa `p-4` + `aria-hidden/rounded-2xl/border/bg-card` | Cumplido | `BookingWizard.tsx:344-346` |
+| `summary-in` con retardo tras fade+colapso | Cumplido | `globals.css:414-416` |
+| `prefers-reduced-motion` neutraliza | Cumplido | `globals.css:651-665` |
+| Hook `use-booking.ts` no modificado | Cumplido | `git diff` vacío |
 | Steps no modificados | Cumplido | `git diff` vacío |
-| Compilación sin errores nuevos | Cumplido | `npx tsc --noEmit` → exit 0 |
-| Consistencia estética (easing + tokens ADR-015/016) | Cumplido | `cubic-bezier(0.22,1,0.36,1)` |
+| Typecheck sin errores | Cumplido | `npx tsc --noEmit` → exit 0 |
+| Flujo en ambas direcciones (avanzar y editar) | Cumplido | `BookingWizard.tsx:71-82` |
+| Success sin regresión | Cumplido | `BookingWizard.tsx:328-341` |
+| Consistencia estética (easing + delay ADR-015/016) | Cumplido | `globals.css:371,387,402,415` |
 
 ---
 
@@ -153,16 +148,15 @@ Ninguno.
 
 | # | Descripción | Severidad | Archivos afectados | Urgencia |
 |---|-------------|-----------|-------------------|----------|
-| 1 | El cleanup del efecto de rAF solo cancela el frame externo; si `leavingStep` cambia antes del rAF interno, `setClosing(true)` podría ejecutarse sobre una carcasa a punto de desmontarse. Impacto nulo en la práctica. | BAJA | `BookingWizard.tsx:63-69` | Refinamiento futuro (cancelar ambos frames o usar flag `cancelled`) |
-| 2 | `window.scrollTo({ behavior: "smooth" })` del hook sobrescribe la `scroll-behavior: auto` de reduced-motion (es JS). | BAJA | `use-booking.ts:47` | Futura iteración (consultar `matchMedia`) — hook congelado |
+| 1 | El `group-hover:-translate-x-0.5` de "Editar" queda inerte cuando `BookingStepSummaryContent` se usa en la carcasa (no es interactivo ahí). Impacto nulo. | BAJA | `BookingStepSummary.tsx` | Opcional (aceptar prop para ocultar "Editar" en contexto no-botón) |
 
 ---
 
 ## Lo que el programador debe saber
 
-- **Morph suave:** el "salto" al transformar el form en card resumen fue corregido. Ahora el form del paso completado se colapsa de forma continua (colapso por grid, sin recorte brusco) mientras la card resumen se apila y el nuevo form aparece debajo.
-- **Scroll natural:** el scroll al cambiar de paso es más natural; la duración del colapso se alineó con el desplazamiento suave nativo.
-- **Convención:** el colapso usa `grid-template-rows` (no `max-height`), que es la técnica correcta para animar colapsos suavemente. Mantener esta convención en futuros cambios.
+- **Salto eliminado:** el salto hacia arriba al hacer click en "Continuar" o al editar una sección fue corregido. La causa era que la carcasa colapsaba el form completo del paso anterior (alto); ahora colapsa solo el resumen compacto (~60px).
+- **Morph continuo:** el form se transforma en el card resumen de forma suave y armónica, en ambas direcciones (avanzar y editar).
+- **Convención:** el contenido de la card vive en `BookingStepSummaryContent` (reutilizable); `BookingStepSummary` es el botón clickeable. Mantener esta separación.
 - **No se tocó** el hook `useBooking`, los steps, los tipos ni el backend.
 
 ---
@@ -172,3 +166,4 @@ Ninguno.
 | Iteración | Archivo de reporte |
 |-----------|-------------------|
 | 1         | `reports/2026-08-18_morph-suave-wizard_iter1.md` |
+| 2         | `reports/2026-08-18_morph-suave-wizard_iter2.md` |

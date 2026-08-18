@@ -408,9 +408,12 @@ html {
   grid-template-rows: 0fr;
 }
 
-/* Entrada del resumen apilado que sustituye al form colapsado. */
+/* Entrada del resumen apilado que sustituye al form colapsado. Empieza con un
+   breve retardo (~0.1s) para que el fade y el colapso de la carcasa terminen
+   antes, manteniendo la sensación continua del morph form→card. */
 .landing-wizard-summary-in {
   animation: landing-wizard-summary-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.1s;
 }
 @keyframes landing-wizard-summary-in {
   from {

@@ -12,13 +12,23 @@ interface BookingStepSummaryProps {
  * Al hacer click re-expande el form de ese paso (setStep). Usa los tokens
  * shadcn que WIZARD_TOKENS mapea a la paleta de la landing.
  */
-export function BookingStepSummary({ label, value, meta, onClick }: BookingStepSummaryProps) {
+/**
+ * Contenido compartido de la card compacta de resumen (label, value, meta y
+ * etiqueta "Editar"), sin el `button` que lo envuelve en `BookingStepSummary`.
+ * Reutilizable fuera de un botón (p. ej. en la carcasa que colapsa durante el
+ * morph form→card del wizard).
+ */
+export function BookingStepSummaryContent({
+  label,
+  value,
+  meta,
+}: {
+  label: string
+  value: string
+  meta?: string
+}) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-    >
+    <>
       <div className="min-w-0">
         <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
@@ -31,6 +41,18 @@ export function BookingStepSummary({ label, value, meta, onClick }: BookingStepS
           Editar
         </span>
       </div>
+    </>
+  )
+}
+
+export function BookingStepSummary({ label, value, meta, onClick }: BookingStepSummaryProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
+      <BookingStepSummaryContent label={label} value={value} meta={meta} />
     </button>
   )
 }

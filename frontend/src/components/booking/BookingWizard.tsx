@@ -9,7 +9,7 @@ import { SelectBarber } from "@/components/booking/steps/SelectBarber"
 import { SelectDate } from "@/components/booking/steps/SelectDate"
 import { Checkout } from "@/components/booking/steps/Checkout"
 import { Success } from "@/components/booking/steps/Success"
-import { BookingStepSummary } from "@/components/booking/BookingStepSummary"
+import { BookingStepSummary, BookingStepSummaryContent } from "@/components/booking/BookingStepSummary"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { PublicBranch, PublicShop } from "@/types/public"
@@ -155,6 +155,31 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
   const activeEditableIndex = EDITABLE_STEPS.indexOf(
     booking.step as (typeof EDITABLE_STEPS)[number],
   )
+
+  // Resumen compacto de un paso editable según las selecciones actuales.
+  // Devuelve null cuando el paso no tiene datos que mostrar (o no es editable).
+  const buildSummary = (
+    step: (typeof EDITABLE_STEPS)[number],
+  ): { label: string; value: string; meta?: string } | null => {
+    if (step === "service" && booking.selectedService) {
+      return {
+        label: STEP_LABELS[step],
+        value: booking.selectedService.name,
+        meta: formatPrice(booking.selectedService.price),
+      }
+    }
+    if (step === "barber" && booking.selectedBarber) {
+      return { label: STEP_LABELS[step], value: booking.selectedBarber.name }
+    }
+    if (step === "date" && booking.selectedDate && booking.selectedSlot) {
+      return {
+        label: STEP_LABELS[step],
+        value: `${formatDate(booking.selectedDate)} · ${booking.selectedSlot} hs`,
+      }
+    }
+    return null
+  }
+
   const summaries: Array<{
     step: (typeof EDITABLE_STEPS)[number]
     label: string
@@ -163,23 +188,16 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
   }> = []
   for (const s of EDITABLE_STEPS) {
     if (EDITABLE_STEPS.indexOf(s) >= activeEditableIndex) continue
-    if (s === "service" && booking.selectedService) {
-      summaries.push({
-        step: s,
-        label: STEP_LABELS[s],
-        value: booking.selectedService.name,
-        meta: formatPrice(booking.selectedService.price),
-      })
-    } else if (s === "barber" && booking.selectedBarber) {
-      summaries.push({ step: s, label: STEP_LABELS[s], value: booking.selectedBarber.name })
-    } else if (s === "date" && booking.selectedDate && booking.selectedSlot) {
-      summaries.push({
-        step: s,
-        label: STEP_LABELS[s],
-        value: `${formatDate(booking.selectedDate)} · ${booking.selectedSlot} hs`,
-      })
-    }
+    const summary = buildSummary(s)
+    if (summary) summaries.push({ step: s, ...summary })
   }
+
+  // Resumen compacto del paso que está colapsando dentro de la carcasa de
+  // salida. Nunca se monta el form completo del paso anterior (evita el salto
+  // de altura: solo colapsa ~60px, no el form alto).
+  const leavingSummary = leavingStep
+    ? buildSummary(leavingStep as (typeof EDITABLE_STEPS)[number])
+    : null
 
   const renderStepContent = (step: BookingStep) => {
     switch (step) {
@@ -325,10 +343,14 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
           {leavingStep && (
             <div
               aria-hidden
-              className="landing-wizard-form-exit rounded-2xl border border-border bg-card p-6 shadow-sm"
+              className="landing-wizard-form-exit rounded-2xl border border-border bg-card p-4 shadow-sm"
             >
               <div className={cn("landing-wizard-collapse", closing && "is-closing")}>
-                {renderStepContent(leavingStep as BookingStep)}
+                {leavingSummary ? (
+                  <BookingStepSummaryContent {...leavingSummary} />
+                ) : (
+                  <div />
+                )}
               </div>
             </div>
           )}

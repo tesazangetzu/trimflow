@@ -369,6 +369,17 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
         </div>
       ) : (
         <div className="space-y-3">
+          {summaries.map((s) => (
+            <div key={s.step} className="landing-wizard-summary-in">
+              <BookingStepSummary
+                label={s.label}
+                value={s.value}
+                meta={s.meta}
+                onClick={() => handleSetStep(s.step)}
+              />
+            </div>
+          ))}
+
           {leavingStep && (
             <div
               aria-hidden
@@ -383,17 +394,6 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
               </div>
             </div>
           )}
-
-          {summaries.map((s) => (
-            <div key={s.step} className="landing-wizard-summary-in">
-              <BookingStepSummary
-                label={s.label}
-                value={s.value}
-                meta={s.meta}
-                onClick={() => handleSetStep(s.step)}
-              />
-            </div>
-          ))}
 
           <div
             key={booking.step}

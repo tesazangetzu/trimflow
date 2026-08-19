@@ -4,7 +4,7 @@
 > **Generado:** 2026-08-19
 > **Proyecto:** TrimFlow
 > **Stack:** Next.js 16.2.12 · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui
-> **Iteraciones realizadas:** 3
+> **Iteraciones realizadas:** 4
 > **Veredicto final:** APROBADO CON OBSERVACIONES
 
 ---
@@ -33,6 +33,7 @@
 | 1         | APROBADO CON OBSERVACIONES | Ninguna (solo observaciones BAJA no bloqueantes) |
 | 2         | APROBADO | Ninguna |
 | 3         | APROBADO CON OBSERVACIONES | Ninguna (solo observaciones BAJA no bloqueantes) |
+| 4         | APROBADO CON OBSERVACIONES | Ninguna (solo observaciones BAJA no bloqueantes) |
 
 ---
 
@@ -127,6 +128,24 @@ Ninguno.
 **Impacto en el código:**
 `globals.css` — `.landing-wizard-form--delayed { animation-delay: 0.75s }`; retardo de `summary-in` a 0.3s. `BookingWizard.tsx` — estado `isStepTransition` + wrappers `handleNext`/`handlePrev`/`handleSetStep`.
 
+### Carcasa de salida al final del stack (iteración 4)
+
+**Qué se decidió:**
+Mover la carcasa de salida del morph form→card (bloque `{leavingStep && ...}`) del inicio del stack al final (después de las cards resumen y antes del form del paso activo).
+
+**Por qué se tomó esta decisión:**
+La carcasa se renderizaba arriba del stack, mostrando el resumen del paso que sale encima del card 1, lo que causaba un "salto raro" al reordenarse con el card 2. Al moverla al final, colapsa donde estaba el form y el card 2 se apila debajo del card 1 sin reordenarse.
+
+**Alternativas descartadas:**
+- Eliminar la carcasa (se perdería el morph form→card).
+- Quitar el contenido del resumen de la carcasa (duplicación menor aceptable).
+
+**Impacto en .docs:**
+Ninguno.
+
+**Impacto en el código:**
+`BookingWizard.tsx` — reorden del bloque `{leavingStep && ...}` dentro del stack.
+
 ---
 
 ## Mapa de cambios
@@ -210,6 +229,7 @@ Ninguno.
 - **Menú móvil como overlay:** el panel de la hamburguesa ya no empuja la página hacia abajo; es un overlay absoluto con fondo sólido (sin transparencia) que siempre queda por encima del contenido.
 - **Animación del CodePen adaptada:** el form del paso activo del wizard entra con `scale(0.2→1.1→1)` + fade (overshoot al 60%), y al completar un paso sale con `translateY(120px)+scale(0.9)` + fade convirtiéndose en la card resumen con lo seleccionado. Se mantuvo el easing editorial `cubic-bezier(0.22,1,0.36,1)` y los tokens shadcn.
 - **Secuencia de animación:** al avanzar de paso, la animación es secuencial: primero sale el form del paso completado, luego entra el card resumen, y por último entra el siguiente paso. El retardo del siguiente form solo se aplica en transiciones (no en el montaje inicial).
+- **Cards apiladas sin reorden:** la carcasa de salida del morph se movió al final del stack, de modo que los cards se apilan en orden (card 1 arriba, card 2 debajo, etc.) sin el "salto raro" que los reordenaba.
 - **No se tocó** el hook `useBooking` en su lógica de negocio (solo se cambió el scroll de `setStep`), ni backend, ni dashboards, ni `.docs`.
 - **Convención nueva:** todo scroll suave de la landing debe pasar por `@/lib/smooth-scroll` (`smoothScrollToSection` / `smoothScrollToTop`), no por `window.scrollTo` directo ni CSS global. Mantener esta convención en futuros cambios.
 
@@ -222,3 +242,4 @@ Ninguno.
 | 1         | `reports/2026-08-19_smooth-scroll-codepen-anim_iter1.md` |
 | 2         | `reports/2026-08-19_smooth-scroll-codepen-anim_iter2.md` |
 | 3         | `reports/2026-08-19_smooth-scroll-codepen-anim_iter3.md` |
+| 4         | `reports/2026-08-19_smooth-scroll-codepen-anim_iter4.md` |

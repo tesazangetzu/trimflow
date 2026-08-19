@@ -363,6 +363,9 @@
 .landing-wizard-form {
   animation: landing-wizard-step-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+.landing-wizard-form--delayed {
+  animation-delay: 0.75s;
+}
 @keyframes landing-wizard-step-in {
   0%   { opacity: 0; transform: scale(0.2); }
   60%  { opacity: 1; transform: scale(1.1); }
@@ -397,7 +400,7 @@
    antes, manteniendo la sensación continua del morph form→card. */
 .landing-wizard-summary-in {
   animation: landing-wizard-summary-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.1s;
+  animation-delay: 0.3s;
 }
 @keyframes landing-wizard-summary-in {
   from {
@@ -654,6 +657,9 @@
     animation: none;
     opacity: 1;
     transform: none;
+  }
+  .landing-wizard-form--delayed {
+    animation-delay: 0s;
   }
   .landing-wizard-form-exit,
   .landing-wizard-summary-in {

@@ -56,6 +56,11 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
   const [leavingStep, setLeavingStep] = useState<string | null>(null)
   const prevStepRef = useRef<string | null>(null)
 
+  // true cuando el form se monta por un cambio de paso (no en el montaje
+  // inicial): retarda la entrada del siguiente paso hasta que la salida del
+  // anterior y la entrada del resumen hayan terminado.
+  const [isStepTransition, setIsStepTransition] = useState(false)
+
   // Dispara la clase `is-closing` tras el montaje de la carcasa para que el
   // colapso por grid-rows arranque desde la altura real del contenido.
   const [closing, setClosing] = useState(false)
@@ -80,6 +85,30 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
       return () => clearTimeout(t)
     }
   }, [booking.step])
+
+  // Mantiene el retardo del form durante toda su entrada retardada (delay 0.75s
+  // + duración 0.5s), desactivándose después de que la animación concluya.
+  useEffect(() => {
+    if (!isStepTransition) return
+    const t = setTimeout(() => setIsStepTransition(false), 1300)
+    return () => clearTimeout(t)
+  }, [isStepTransition])
+
+  // Setea el retardo de forma síncrona ANTES de cambiar de paso, para que el
+  // form del paso activo (remontado por key={booking.step}) ya tenga la clase
+  // de retardo en su primer render.
+  const handleNext = () => {
+    setIsStepTransition(true)
+    booking.nextStep()
+  }
+  const handlePrev = () => {
+    setIsStepTransition(true)
+    booking.prevStep()
+  }
+  const handleSetStep = (step: (typeof EDITABLE_STEPS)[number]) => {
+    setIsStepTransition(true)
+    booking.setStep(step)
+  }
 
   const activeBranch: PublicBranch | null = useMemo(() => {
     if (!resolvedShop || resolvedShop.branches.length === 0) return null
@@ -208,7 +237,7 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
             selectedService={booking.selectedService}
             canProceed={booking.canProceed}
             onSelect={booking.handleSelectService}
-            onNext={booking.nextStep}
+            onNext={handleNext}
           />
         )
 
@@ -219,8 +248,8 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
             selectedBarber={booking.selectedBarber}
             canProceed={booking.canProceed}
             onSelect={booking.handleSelectBarber}
-            onPrev={booking.prevStep}
-            onNext={booking.nextStep}
+            onPrev={handlePrev}
+            onNext={handleNext}
           />
         )
 
@@ -235,8 +264,8 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
             canProceed={booking.canProceed}
             onSelectDate={booking.handleSelectDate}
             onSelectSlot={booking.handleSelectSlot}
-            onPrev={booking.prevStep}
-            onNext={booking.nextStep}
+            onPrev={handlePrev}
+            onNext={handleNext}
           />
         )
 
@@ -257,7 +286,7 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
             onNameChange={booking.setName}
             onPhoneChange={booking.setPhone}
             onEmailChange={booking.setEmail}
-            onPrev={booking.prevStep}
+            onPrev={handlePrev}
             onSubmit={booking.handleSubmit}
           />
         )
@@ -361,14 +390,17 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
                 label={s.label}
                 value={s.value}
                 meta={s.meta}
-                onClick={() => booking.setStep(s.step)}
+                onClick={() => handleSetStep(s.step)}
               />
             </div>
           ))}
 
           <div
             key={booking.step}
-            className="landing-wizard-form rounded-2xl border border-border bg-card p-6 shadow-sm"
+            className={cn(
+              "landing-wizard-form rounded-2xl border border-border bg-card p-6 shadow-sm",
+              isStepTransition && "landing-wizard-form--delayed",
+            )}
           >
             {renderStepContent(booking.step)}
           </div>

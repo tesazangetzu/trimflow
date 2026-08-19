@@ -372,45 +372,47 @@
   100% { opacity: 1; transform: scale(1); }
 }
 
-/* Carcasa de salida del paso completado: colapsa de forma continua (grid-rows)
-   y se desvanece para "transformarse" en la card resumen apilada (morph form→card). */
+/* Morph form→card (iteración 5): la carcasa de salida monta el form completo del
+   paso que abandona a su altura natural (medida con offsetHeight en
+   BookingWizard) y reduce su altura hasta el alto del card resumen con el easing
+   editorial, mientras hace cross-fade del contenido del form (fade-out) al
+   resumen (fade-in). El card apilado que persiste al desmontar la carcasa NO
+   anima su entrada: aparece porque la carcasa se convierte en él (handoff sin
+   salto). */
+.landing-wizard-morph {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+  transition: height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.landing-wizard-morph__form {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.landing-wizard-morph__summary {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.landing-wizard-morph.is-shrinking .landing-wizard-morph__form {
+  opacity: 0;
+}
+.landing-wizard-morph.is-shrinking .landing-wizard-morph__summary {
+  opacity: 1;
+}
+
+/* Salida del card al editar/volver (transición hacia atrás): el card resumen
+   sale lanzado hacia abajo y al fondo (translateY + scale + fade) y luego
+   aparece el step. Se conserva la animación previa al morph. */
 .landing-wizard-form-exit {
   animation: landing-wizard-step-out 0.3s ease-in both;
 }
 @keyframes landing-wizard-step-out {
   from { opacity: 1; transform: translateY(0) scale(1); }
   to   { opacity: 0; transform: translateY(120px) scale(0.9); }
-}
-.landing-wizard-collapse {
-  display: grid;
-  grid-template-rows: 1fr;
-  min-height: 0;
-  overflow: hidden;
-  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.landing-wizard-collapse > * {
-  min-height: 0;
-}
-.landing-wizard-collapse.is-closing {
-  grid-template-rows: 0fr;
-}
-
-/* Entrada del resumen apilado que sustituye al form colapsado. Empieza con un
-   breve retardo (~0.1s) para que el fade y el colapso de la carcasa terminen
-   antes, manteniendo la sensación continua del morph form→card. */
-.landing-wizard-summary-in {
-  animation: landing-wizard-summary-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.3s;
-}
-@keyframes landing-wizard-summary-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }
 
 /* ── Landing editorial (ADR-016) ──
@@ -661,15 +663,20 @@
   .landing-wizard-form--delayed {
     animation-delay: 0s;
   }
-  .landing-wizard-form-exit,
-  .landing-wizard-summary-in {
+  .landing-wizard-morph {
+    transition: none;
+  }
+  .landing-wizard-morph__form {
+    display: none;
+  }
+  .landing-wizard-morph__summary {
+    position: static;
+    opacity: 1;
+  }
+  .landing-wizard-form-exit {
     animation: none;
     opacity: 1;
     transform: none;
-  }
-  .landing-wizard-collapse {
-    transition: none;
-    grid-template-rows: 0fr;
   }
   .landing-reveal {
     transition: none;

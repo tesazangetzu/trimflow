@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { usePublicData } from "@/hooks/booking/use-public-data"
 import { useBooking, type BookingStep, type WizardService } from "@/hooks/booking/use-booking"
 import { useAvailability } from "@/hooks/booking/use-availability"
@@ -24,6 +24,11 @@ const STEP_LABELS: Record<string, string> = {
 
 // Orden editable del wizard (excluye `success`, que es pantalla final).
 const EDITABLE_STEPS = ["service", "barber", "date", "checkout"] as const
+
+// Orden completo de pasos (incluye `success`). Se usa para distinguir la
+// dirección de la transición: hacia adelante (next) → morph form→card; hacia
+// atrás (editar/prev) → el card sale lanzado hacia abajo y aparece el step.
+const STEP_ORDER = ["service", "barber", "date", "checkout", "success"]
 
 function formatPrice(value: number): string {
   return new Intl.NumberFormat("es-CL", {
@@ -51,37 +56,76 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
   const booking = useBooking(slug)
 
   // Paso editable que acaba de abandonarse: mientras esté activo, se muestra una
-  // "carcasa" con el chrome de la card que colapsa (morph form→card) antes de
-  // aparecer el resumen apilado del paso. Se limpia con un timeout ≥ duración.
+  // "carcasa" que monta el form completo del paso a su altura natural y reduce su
+  // altura hasta el alto del card resumen (morph form→card). Se limpia con un
+  // timeout ≥ duración de la reducción.
   const [leavingStep, setLeavingStep] = useState<string | null>(null)
   const prevStepRef = useRef<string | null>(null)
 
+  // Dirección de la transición de salida: "morph" (hacia adelante, el form se
+  // reduce hasta convertirse en el card) o "exit" (hacia atrás/editar, el card
+  // sale lanzado hacia abajo y al fondo y luego aparece el step).
+  const [leavingMode, setLeavingMode] = useState<"morph" | "exit" | null>(null)
+
+  // Alturas medidas (offsetHeight) de la carcasa: el form completo del paso que
+  // sale (formHeight) y el card resumen (cardHeight). `shrinking` dispara la
+  // reducción de altura + cross-fade form→resumen.
+  const [morph, setMorph] = useState<{
+    formHeight: number
+    cardHeight: number
+    shrinking: boolean
+  } | null>(null)
+  const formRef = useRef<HTMLDivElement>(null)
+  const summaryRef = useRef<HTMLDivElement>(null)
+  const morphRafRef = useRef<number | null>(null)
+
   // true cuando el form se monta por un cambio de paso (no en el montaje
   // inicial): retarda la entrada del siguiente paso hasta que la salida del
-  // anterior y la entrada del resumen hayan terminado.
+  // anterior haya terminado.
   const [isStepTransition, setIsStepTransition] = useState(false)
 
-  // Dispara la clase `is-closing` tras el montaje de la carcasa para que el
-  // colapso por grid-rows arranque desde la altura real del contenido.
-  const [closing, setClosing] = useState(false)
+  // Mide las alturas tras montar la carcasa y dispara la reducción: primero
+  // fija la altura al form (sin transición, es la altura natural) y en el frame
+  // siguiente la reduce hasta el alto del card (ahí sí transiciona).
+  useLayoutEffect(() => {
+    if (!leavingStep || leavingMode !== "morph") return
+    const formEl = formRef.current
+    const summaryEl = summaryRef.current
+    if (!formEl || !summaryEl) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 
-  useEffect(() => {
-    if (!leavingStep) return
-    const raf = requestAnimationFrame(() =>
-      requestAnimationFrame(() => setClosing(true)),
-    )
-    return () => cancelAnimationFrame(raf)
-  }, [leavingStep])
+    const formHeight = formEl.offsetHeight
+    const cardHeight = summaryEl.offsetHeight
+
+    const run = () => {
+      morphRafRef.current = requestAnimationFrame(() => {
+        setMorph({ formHeight, cardHeight, shrinking: false })
+        morphRafRef.current = requestAnimationFrame(() => {
+          setMorph((m) => (m ? { ...m, shrinking: true } : m))
+        })
+      })
+    }
+    run()
+
+    return () => {
+      if (morphRafRef.current) cancelAnimationFrame(morphRafRef.current)
+    }
+  }, [leavingStep, leavingMode])
 
   useEffect(() => {
     const prev = prevStepRef.current
     prevStepRef.current = booking.step
     if (prev && prev !== booking.step && (EDITABLE_STEPS as readonly string[]).includes(prev)) {
       setLeavingStep(prev)
+      const prevIndex = STEP_ORDER.indexOf(prev)
+      const currIndex = STEP_ORDER.indexOf(booking.step)
+      setLeavingMode(currIndex > prevIndex ? "morph" : "exit")
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
       const t = setTimeout(() => {
         setLeavingStep(null)
-        setClosing(false)
-      }, 300)
+        setLeavingMode(null)
+        setMorph(null)
+      }, reduced ? 0 : 600)
       return () => clearTimeout(t)
     }
   }, [booking.step])
@@ -217,13 +261,15 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
   }> = []
   for (const s of EDITABLE_STEPS) {
     if (EDITABLE_STEPS.indexOf(s) >= activeEditableIndex) continue
+    // Evita duplicación durante el morph: el paso que sale ya se muestra en la
+    // carcasa; su card apilada aparece al desmontar (handoff sin salto).
+    if (leavingStep && s === leavingStep) continue
     const summary = buildSummary(s)
     if (summary) summaries.push({ step: s, ...summary })
   }
 
-  // Resumen compacto del paso que está colapsando dentro de la carcasa de
-  // salida. Nunca se monta el form completo del paso anterior (evita el salto
-  // de altura: solo colapsa ~60px, no el form alto).
+  // Resumen compacto del paso que está transformándose en card dentro de la
+  // carcasa de salida (capa superior del cross-fade form→resumen).
   const leavingSummary = leavingStep
     ? buildSummary(leavingStep as (typeof EDITABLE_STEPS)[number])
     : null
@@ -370,28 +416,57 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
       ) : (
         <div className="space-y-3">
           {summaries.map((s) => (
-            <div key={s.step} className="landing-wizard-summary-in">
-              <BookingStepSummary
-                label={s.label}
-                value={s.value}
-                meta={s.meta}
-                onClick={() => handleSetStep(s.step)}
-              />
-            </div>
+            <BookingStepSummary
+              key={s.step}
+              label={s.label}
+              value={s.value}
+              meta={s.meta}
+              onClick={() => handleSetStep(s.step)}
+            />
           ))}
 
-          {leavingStep && (
+          {leavingStep && leavingMode === "morph" && (
             <div
               aria-hidden
-              className="landing-wizard-form-exit rounded-2xl border border-border bg-card p-4 shadow-sm"
+              className={cn(
+                "landing-wizard-morph rounded-2xl bg-card shadow-sm overflow-hidden",
+                morph?.shrinking && "is-shrinking",
+              )}
+              style={
+                morph
+                  ? { height: morph.shrinking ? morph.cardHeight : morph.formHeight }
+                  : undefined
+              }
             >
-              <div className={cn("landing-wizard-collapse", closing && "is-closing")}>
+              <div
+                ref={formRef}
+                className="landing-wizard-morph__form rounded-2xl border border-border p-6"
+              >
+                {renderStepContent(leavingStep as BookingStep)}
+              </div>
+              <div
+                ref={summaryRef}
+                className="landing-wizard-morph__summary flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-left"
+              >
                 {leavingSummary ? (
                   <BookingStepSummaryContent {...leavingSummary} />
                 ) : (
                   <div />
                 )}
               </div>
+            </div>
+          )}
+
+          {leavingStep && leavingMode === "exit" && (
+            <div
+              aria-hidden
+              className="landing-wizard-form-exit rounded-2xl border border-border bg-card p-4 shadow-sm"
+            >
+              {leavingSummary ? (
+                <BookingStepSummaryContent {...leavingSummary} />
+              ) : (
+                <div />
+              )}
             </div>
           )}
 

@@ -4,7 +4,7 @@
 > **Generado:** 2026-08-19
 > **Proyecto:** TrimFlow
 > **Stack:** Next.js 16.2.12 · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui
-> **Iteraciones realizadas:** 4
+> **Iteraciones realizadas:** 5
 > **Veredicto final:** APROBADO CON OBSERVACIONES
 
 ---
@@ -34,6 +34,7 @@
 | 2         | APROBADO | Ninguna |
 | 3         | APROBADO CON OBSERVACIONES | Ninguna (solo observaciones BAJA no bloqueantes) |
 | 4         | APROBADO CON OBSERVACIONES | Ninguna (solo observaciones BAJA no bloqueantes) |
+| 5         | APROBADO CON OBSERVACIONES | Ninguna (solo observaciones BAJA no bloqueantes) |
 
 ---
 
@@ -146,6 +147,41 @@ Ninguno.
 **Impacto en el código:**
 `BookingWizard.tsx` — reorden del bloque `{leavingStep && ...}` dentro del stack.
 
+### Morph form→card por reducción de altura (iteración 5)
+
+**Qué se decidió:**
+Rediseñar la transición de "continuar" del wizard: la carcasa de salida monta el form completo del paso que abandona a su altura natural (medida con `offsetHeight`), reduce su altura hasta el alto del card resumen con el easing editorial y hace cross-fade del contenido del form → resumen mientras se reduce. Al terminar, la carcasa se desmonta dejando un card persistente idéntico (handoff sin salto). El card NO anima su entrada: aparece porque la carcasa se convierte en él.
+
+**Por qué se tomó esta decisión:**
+El usuario pidió que al continuar el form se reduzca en altura hasta el tamaño del card (ocultando su contenido mientras se reduce) y se convierta en el card, de forma fluida, sin que el card aparezca con animación separada. Se abandonó el patrón `step-out` + `collapse→0fr` + `summary-in`.
+
+**Alternativas descartadas:**
+- Mantener el patrón `step-out` + `collapse→0fr` + `summary-in` (no lograba la reducción fluida del form al card).
+- Colapso por `grid-rows` (no permitía medir/reducir a la altura exacta del card con cross-fade).
+
+**Impacto en .docs:**
+Ninguno (cambio presentacional; ADR-015/016 dicen "no se toca BookingWizard" en el sentido de no tocar la lógica de reserva, que permanece intacta).
+
+**Impacto en el código:**
+`globals.css` — nuevas clases `.landing-wizard-morph` (+ `__form`, `__summary`, `.is-shrinking`) con cross-fade; eliminadas `.landing-wizard-form-exit`/`step-out`/`collapse`/`summary-in` (luego parcialmente restauradas para "editar"). `BookingWizard.tsx` — estado `morph` + refs, `useLayoutEffect` de medición con `offsetHeight` + doble rAF, exclusión del paso `leavingStep` de `summaries`.
+
+### Restaurar animación de "editar" (transición hacia atrás, iteración 5)
+
+**Qué se decidió:**
+Distinguir la dirección de la transición con un estado `leavingMode: "morph" | "exit" | null`. Hacia adelante (`next`) → morph form→card. Hacia atrás (`editar`/`prev`) → el card sale lanzado hacia abajo y al fondo (`step-out`) y luego aparece el step.
+
+**Por qué se tomó esta decisión:**
+Durante la revisión, el programador observó que la animación de "editar" (click en card → re-expande a form) había cambiado con el morph y pidió conservar la animación anterior: el card sale lanzado hacia abajo y al fondo y luego aparece el step.
+
+**Alternativas descartadas:**
+- Aplicar el morph también hacia atrás (el usuario pidió conservar la animación anterior en "editar").
+
+**Impacto en .docs:**
+Ninguno.
+
+**Impacto en el código:**
+`BookingWizard.tsx` — estado `leavingMode`, cálculo de dirección por `STEP_ORDER.indexOf`, carcasa morph solo en modo "morph" y carcasa `landing-wizard-form-exit` en modo "exit". `globals.css` — restauradas `.landing-wizard-form-exit` + keyframe `landing-wizard-step-out` y su manejo en `prefers-reduced-motion`.
+
 ---
 
 ## Mapa de cambios
@@ -161,11 +197,11 @@ Ninguno.
 
 | Archivo | Qué cambió | Por qué cambió |
 |---------|-----------|---------------|
-| `frontend/src/app/globals.css` | Eliminado `html { scroll-behavior: smooth }`; keyframes del wizard reemplazados por `landing-wizard-step-in` (scale) y `landing-wizard-step-out` (translateY+scale); `.landing-nav-panel` como overlay absoluto con fondo sólido; `.landing-wizard-form--delayed` (delay 0.75s); retardo de `summary-in` a 0.3s | Corregir scroll mobile; implementar animación CodePen; menú overlay; secuencia de animación |
+| `frontend/src/app/globals.css` | Eliminado `html { scroll-behavior: smooth }`; keyframes del wizard reemplazados por `landing-wizard-step-in` (scale) y `landing-wizard-step-out` (translateY+scale); `.landing-nav-panel` como overlay absoluto con fondo sólido; `.landing-wizard-form--delayed` (delay 0.75s); retardo de `summary-in` a 0.3s; **iter 5:** clases `.landing-wizard-morph` (+ `__form`, `__summary`, `.is-shrinking`) con cross-fade; restauradas `.landing-wizard-form-exit`/`step-out` para "editar" | Corregir scroll mobile; implementar animación CodePen; menú overlay; secuencia de animación; morph form→card; restaurar animación de editar |
 | `frontend/src/components/landing/LandingNav.tsx` | Anclas desktop y móvil usan `smoothScrollToSection`; logo usa `smoothScrollToTop` | Smooth scroll dirigido por JS |
 | `frontend/src/components/landing/ScrollToTopButton.tsx` | Usa `smoothScrollToTop` | Smooth scroll dirigido por JS |
 | `frontend/src/hooks/booking/use-booking.ts` | `setStep` usa `smoothScrollToTop` (solo línea 47) | Evitar scroll errático al cambiar de paso en mobile |
-| `frontend/src/components/booking/BookingWizard.tsx` | Estado `isStepTransition` + wrappers `handleNext`/`handlePrev`/`handleSetStep` que setean el retardo síncronamente; clase `landing-wizard-form--delayed` condicional | Secuenciar la animación (sale form → entra card → entra siguiente paso) |
+| `frontend/src/components/booking/BookingWizard.tsx` | Estado `isStepTransition` + wrappers `handleNext`/`handlePrev`/`handleSetStep` que setean el retardo síncronamente; clase `landing-wizard-form--delayed` condicional; **iter 5:** estado `morph` + refs, `useLayoutEffect` de medición con `offsetHeight` + doble rAF, exclusión del paso `leavingStep` de `summaries`, estado `leavingMode` para distinguir morph (adelante) / exit (atrás) | Secuenciar la animación (sale form → entra card → entra siguiente paso); morph form→card; restaurar animación de editar |
 
 ### Archivos eliminados
 
@@ -207,6 +243,8 @@ Ninguno.
 | Sin romper ADR-015/016/013 | Cumplido | Easing editorial conservado; aislamiento landing/dashboard intacto |
 | Compilación sin errores nuevos | Cumplido | `npx tsc --noEmit` → exit 0; lint: 7 problemas preexistentes, cero nuevos |
 | Alcance respetado (no se tocó backend/dashboards/.docs) | Cumplido | `git diff` verificado |
+| Morph form→card (iter 5): form se reduce en altura hasta el card ocultando contenido, sin animación separada del card | Cumplido | `BookingWizard.tsx` (estado `morph` + `useLayoutEffect` con `offsetHeight` + doble rAF) + `globals.css` (`.landing-wizard-morph`); prueba interactiva: 687px → 75px, handoff sin salto |
+| "Editar" conserva la animación anterior (card sale hacia abajo y al fondo, luego aparece el step) | Cumplido | `leavingMode` distingue morph (adelante) / exit (atrás); `.landing-wizard-form-exit` + `step-out` restaurados |
 
 ---
 
@@ -219,6 +257,9 @@ Ninguno.
 | 3 | Las secciones conservan `scroll-mt-24` (96px) compensado por el selector `#id { scroll-margin-top: 64px }`; limpiable quitando `scroll-mt-24` | BAJA | `LandingSections.tsx` | Limpiable en futura iteración |
 | 4 | Comentario desactualizado en `globals.css` (~0.1s) que no refleja el nuevo retardo 0.3s de `summary-in` | BAJA | `globals.css` | Cosmético |
 | 5 | Edge case: dos avances en rápida sucesión (<1300ms) apagan `isStepTransition` algo antes del fin de la segunda entrada; no observable en práctica normal | BAJA | `BookingWizard.tsx` | No requiere acción |
+| 6 | ADR-015/016 dicen literalmente "no se toca `BookingWizard`"; el cambio de iter 5 es solo presentacional (morph + animación de editar), no toca la lógica de reserva. Convendría una nota de enmienda en `.docs/` | BAJA | `.docs/decisions/ADR-015`, `ADR-016` | Documental |
+| 7 | El keyframe de salida `step-out` usa `ease-in` y no el easing editorial — restauración intencional por pedido del programador de conservar la animación anterior | BAJA | `globals.css` | No requiere acción |
+| 8 | `morphRafRef` guarda el id del rAF más reciente; cancelación best-effort. Correcto en la práctica | BAJA | `BookingWizard.tsx` | Higiene de estado |
 
 ---
 
@@ -230,6 +271,8 @@ Ninguno.
 - **Animación del CodePen adaptada:** el form del paso activo del wizard entra con `scale(0.2→1.1→1)` + fade (overshoot al 60%), y al completar un paso sale con `translateY(120px)+scale(0.9)` + fade convirtiéndose en la card resumen con lo seleccionado. Se mantuvo el easing editorial `cubic-bezier(0.22,1,0.36,1)` y los tokens shadcn.
 - **Secuencia de animación:** al avanzar de paso, la animación es secuencial: primero sale el form del paso completado, luego entra el card resumen, y por último entra el siguiente paso. El retardo del siguiente form solo se aplica en transiciones (no en el montaje inicial).
 - **Cards apiladas sin reorden:** la carcasa de salida del morph se movió al final del stack, de modo que los cards se apilan en orden (card 1 arriba, card 2 debajo, etc.) sin el "salto raro" que los reordenaba.
+- **Morph form→card (iter 5):** al continuar, el form del paso se reduce en altura hasta el tamaño del card (ocultando su contenido mientras se reduce) y se convierte en el card, de forma fluida y sin que el card aparezca con animación separada. La altura se mide con `offsetHeight` y se transiciona con el easing editorial.
+- **"Editar" conserva la animación anterior:** al hacer click en un card (o volver), el card sale lanzado hacia abajo y al fondo (`step-out`) y luego aparece el step. La distinción se hace por dirección de la transición (`leavingMode`): adelante → morph, atrás → exit.
 - **No se tocó** el hook `useBooking` en su lógica de negocio (solo se cambió el scroll de `setStep`), ni backend, ni dashboards, ni `.docs`.
 - **Convención nueva:** todo scroll suave de la landing debe pasar por `@/lib/smooth-scroll` (`smoothScrollToSection` / `smoothScrollToTop`), no por `window.scrollTo` directo ni CSS global. Mantener esta convención en futuros cambios.
 
@@ -243,3 +286,4 @@ Ninguno.
 | 2         | `reports/2026-08-19_smooth-scroll-codepen-anim_iter2.md` |
 | 3         | `reports/2026-08-19_smooth-scroll-codepen-anim_iter3.md` |
 | 4         | `reports/2026-08-19_smooth-scroll-codepen-anim_iter4.md` |
+| 5         | `reports/2026-08-19_smooth-scroll-codepen-anim_iter5.md` |

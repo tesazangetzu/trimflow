@@ -533,14 +533,32 @@
   border-color: var(--landing-surface);
 }
 
-/* Panel de la hamburguesa (<md): colapsado por defecto, desplegado con `is-open`. */
+/* Panel de la hamburguesa (<md): overlay absoluto anclado bajo el nav, fondo
+   sólido SIN transparencia, por encima del contenido. */
 .landing-nav-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  background: var(--landing-bg);
+  border-color: transparent;
+  transition: max-height 0.3s ease, border-color 0.3s ease;
 }
 .landing-nav.is-open .landing-nav-panel {
   max-height: 24rem;
+  border-color: var(--landing-surface);
+}
+
+/* Barra superior con fondo sólido cuando el menú está abierto (evita ver el
+   contenido por transparencia). */
+.landing-nav.is-open {
+  background: var(--landing-bg);
+}
+.landing-nav.is-open.is-scrolled {
+  background: var(--landing-bg);
+  border-color: var(--landing-surface);
 }
 
 /* Marquesina (ADR-015/016): se mantiene la keyframe landing-marquee; se agrupa en

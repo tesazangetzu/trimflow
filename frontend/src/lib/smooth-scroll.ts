@@ -1,5 +1,7 @@
 "use client"
 
+const NAV_OFFSET = 64
+
 function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches
 }
@@ -8,7 +10,8 @@ function prefersReducedMotion(): boolean {
 export function smoothScrollToSection(id: string): void {
   const el = document.getElementById(id)
   if (!el) return
-  el.scrollIntoView({ block: "start", behavior: prefersReducedMotion() ? "auto" : "smooth" })
+  const y = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET
+  window.scrollTo({ top: Math.max(0, y), behavior: prefersReducedMotion() ? "auto" : "smooth" })
 }
 
 /** Vuelve al top del documento. */

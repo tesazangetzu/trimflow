@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { createAppointment, lookupCustomer } from "@/services/public.service"
 import { toShopISO } from "@/lib/timezone"
+import { smoothScrollToTop } from "@/lib/smooth-scroll"
 import type {
   PublicAppointmentPayload,
   AppointmentResult,
@@ -44,7 +45,7 @@ export function useBooking(slug: string) {
 
   const setStep = useCallback((next: BookingStep) => {
     setStepState(next)
-    window.scrollTo({ top: 0, behavior: "smooth" })
+    smoothScrollToTop()
   }, [])
 
   const nextStep = useCallback(() => {

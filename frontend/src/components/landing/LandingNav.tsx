@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
 import { useActiveSection } from "@/hooks/landing/use-active-section"
 import { CTA_LABEL } from "@/components/landing/landing-text"
+import { smoothScrollToSection, smoothScrollToTop } from "@/lib/smooth-scroll"
 
 const NAV_LINKS = [
   { id: "servicios", label: "Servicios" },
@@ -51,7 +52,7 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === `/${slug}`) {
       e.preventDefault()
-      window.scrollTo({ top: 0, behavior: "smooth" })
+      smoothScrollToTop()
     }
     close()
   }
@@ -83,6 +84,10 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
               <a
                 key={link.id}
                 href={`#${link.id}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  smoothScrollToSection(link.id)
+                }}
                 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest transition-colors"
                 style={{
                   color: isActive ? "var(--landing-accent)" : "var(--landing-muted)",
@@ -136,7 +141,11 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
               <a
                 key={link.id}
                 href={`#${link.id}`}
-                onClick={() => setOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  smoothScrollToSection(link.id)
+                  setOpen(false)
+                }}
                 className="flex items-center gap-2 py-2 text-sm font-medium uppercase tracking-widest transition-colors"
                 style={{
                   color: isActive ? "var(--landing-accent)" : "var(--landing-muted)",

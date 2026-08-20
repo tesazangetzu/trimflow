@@ -24,6 +24,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { PublicModule } from './modules/public/public.module';
 import { LandingModule } from './modules/landing/landing.module';
+import { ImagesModule } from './modules/images/images.module';
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { LandingModule } from './modules/landing/landing.module';
     ScheduleModule,
     PublicModule,
     LandingModule,
+    ImagesModule,
   ],
   providers: [
     {

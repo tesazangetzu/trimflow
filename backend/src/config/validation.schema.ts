@@ -21,4 +21,9 @@ export const validationSchema = Joi.object({
   TENANT_DB_SCHEMA_PREFIX: Joi.string().default('tenant_'),
   RATE_LIMIT_TTL: Joi.number().default(60),
   RATE_LIMIT_MAX: Joi.number().default(100),
+  R2_ACCOUNT_ID: Joi.string().required(),
+  R2_ACCESS_KEY_ID: Joi.string().required(),
+  R2_SECRET_ACCESS_KEY: Joi.string().required(),
+  R2_BUCKET: Joi.string().required(),
+  R2_PUBLIC_URL: Joi.string().optional().allow(''),
 });

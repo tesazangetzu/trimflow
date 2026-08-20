@@ -156,6 +156,27 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 
 ---
 
+## Backlog — Próximas actualizaciones
+
+> Notas de mejora registradas por el programador para futuras iteraciones. No forman parte del MVP actual.
+
+### Gestión por sucursal en el panel admin
+
+- [ ] **Servicios por sucursal**: en el panel admin, gestionar los servicios dentro de una sucursal seleccionada (el modelo ya tiene `Service.branchId`; falta la UX de gestión por sucursal).
+- [ ] **Horarios por sucursal**: gestionar los horarios/bloques de trabajo por sucursal (hoy `Schedule`/`AvailabilityBlock` cuelgan de `barberId`; el barber ya tiene `branchId`).
+- [ ] **Clientes por sucursal**: gestionar los clientes por sucursal (el modelo ya tiene `Customer.branchId`; falta la UX de gestión por sucursal).
+- [ ] **Barberos por sucursal**: gestionar los barberos por sucursal (el modelo ya tiene `Barber.branchId`; falta la UX de gestión por sucursal).
+
+### Upload de imágenes en el panel admin landing (frontend)
+
+> El backend de imágenes con R2 se implementa primero (módulo + servicio + multer + env). El frontend se conecta en una iteración posterior.
+
+- [ ] Reemplazar el input de URL del card "Marca e imágenes" (`/admin/landing`) por un **uploader** que suba la imagen al endpoint de R2 y guarde la ruta devuelta en `branding.logoUrl` / `branding.heroImageUrl`.
+- [ ] Validar en el cliente los tipos de archivo (png, jpg, webp) y las proporciones antes de subir.
+- [ ] Mostrar vista previa de la imagen subida y permitir reemplazarla/eliminarla.
+
+---
+
 ## Criterios de calidad del MVP
 
 | Criterio | Objetivo |

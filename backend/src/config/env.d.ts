@@ -20,5 +20,10 @@ declare namespace NodeJS {
     TENANT_DB_SCHEMA_PREFIX?: string;
     RATE_LIMIT_TTL?: string;
     RATE_LIMIT_MAX?: string;
+    R2_ACCOUNT_ID: string;
+    R2_ACCESS_KEY_ID: string;
+    R2_SECRET_ACCESS_KEY: string;
+    R2_BUCKET: string;
+    R2_PUBLIC_URL?: string;
   }
 }

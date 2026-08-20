@@ -65,4 +65,33 @@ export class LandingService {
     this.logger.log(`Landing config updated for tenant ${tenantId}`);
     return merged;
   }
+
+  /**
+   * Persiste la URL de una imagen de branding (logo/hero) en
+   * `Tenant.settings.landing.branding.<field>` sin tocar el resto de la config.
+   */
+  async setBrandingImageUrl(
+    tenantId: string,
+    field: 'logoUrl' | 'heroImageUrl',
+    url: string,
+  ): Promise<LandingConfig> {
+    const tenant = await this.tenantRepository.findOne({ where: { id: tenantId } });
+    if (!tenant) {
+      throw new EntityNotFoundException('Tenant no encontrado');
+    }
+
+    const merged = mergeLandingConfig(tenant.settings?.landing);
+    merged.branding = {
+      ...merged.branding,
+      [field]: url,
+    };
+
+    tenant.settings = {
+      ...(tenant.settings ?? {}),
+      landing: merged,
+    };
+    await this.tenantRepository.save(tenant);
+    this.logger.log(`Branding image (${field}) updated for tenant ${tenantId}`);
+    return merged;
+  }
 }

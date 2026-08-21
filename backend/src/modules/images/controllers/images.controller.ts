@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import {
   BadRequestException,
   Controller,
@@ -13,7 +14,7 @@ import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
 import { Roles } from '../../../shared/decorators/roles.decorator';
 import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
-import { ImagesServiceInterface } from '../interfaces/images-service.interface';
+import { ImagesServiceInterface, IMAGES_SERVICE } from '../interfaces/images-service.interface';
 import { UploadImageResponseDto } from '../dto/upload-image-response.dto';
 import { UploadTargetDto } from '../dto/upload-target.dto';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '../constants/image-policy';
@@ -23,7 +24,9 @@ import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '../constants/image-policy';
 @Controller('images')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ImagesController {
-  constructor(private imagesService: ImagesServiceInterface) {}
+  constructor(
+    @Inject(IMAGES_SERVICE) private imagesService: ImagesServiceInterface,
+  ) {}
 
   @Post('upload')
   @Roles('admin')

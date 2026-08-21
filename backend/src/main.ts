@@ -23,6 +23,16 @@ async function bootstrap() {
 
   app.setGlobalPrefix(apiPrefix);
 
+  // Ruta raíz para health checks (Render/monitores hacen HEAD /).
+  // Registrada a nivel Express para que viva fuera del prefijo global.
+  const httpAdapter = app.getHttpAdapter().getInstance();
+  httpAdapter.get('/', (_req: unknown, res: { status: (n: number) => { json: (b: unknown) => void } }) =>
+    res.status(200).json({ status: 'ok', service: 'trimflow-api' }),
+  );
+  httpAdapter.head('/', (_req: unknown, res: { status: (n: number) => { end: () => void } }) => {
+    res.status(200).end();
+  });
+
   // Migraciones automáticas
   try {
     const dataSource = app.get(DataSource);

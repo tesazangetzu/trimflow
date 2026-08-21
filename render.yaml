@@ -11,6 +11,7 @@ services:
     plan: free
     buildCommand: npm ci --include=dev && npm run build
     startCommand: node dist/main
+    healthCheckPath: /
     envVars:
       - key: NODE_VERSION
         value: "20"

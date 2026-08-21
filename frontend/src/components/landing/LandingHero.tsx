@@ -8,6 +8,7 @@ import { ChevronDown } from "lucide-react"
 import type { LandingConfig } from "@/types/landing"
 import { LANDING_DEFAULTS } from "@/types/landing"
 import { CTA_LABEL } from "@/components/landing/landing-text"
+import { smoothScrollToSection } from "@/lib/smooth-scroll"
 
 const CTA_SECONDARY = "VER SERVICIOS"
 
@@ -120,6 +121,10 @@ export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }:
           </Link>
           <a
             href="#servicios"
+            onClick={(e) => {
+              e.preventDefault()
+              smoothScrollToSection("servicios")
+            }}
             className="landing-hero-block inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold uppercase tracking-widest transition-colors hover:bg-[var(--landing-accent)]/10"
             style={{
               animationDelay: "360ms",
@@ -138,6 +143,10 @@ export function LandingHero({ slug, shopName, config, heroTitle, hasHeroImage }:
       <a
         href="#servicios"
         aria-label="Bajar a servicios"
+        onClick={(e) => {
+          e.preventDefault()
+          smoothScrollToSection("servicios")
+        }}
         className="landing-scroll-hint absolute bottom-24 left-1/2 z-10 hidden -translate-x-1/2 sm:flex"
       >
         <ChevronDown className="landing-scroll-chevron size-4" aria-hidden />

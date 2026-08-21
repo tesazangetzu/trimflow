@@ -55,11 +55,26 @@ export function ReservationPage({ slug }: { slug: string }) {
 
   return (
     <div
-      className="landing-page min-h-screen"
+      className="landing-page relative min-h-screen"
       style={{ ...landingThemeVars(config), background: "var(--landing-bg)" }}
     >
+      {/* Background: imagen del hero de la landing + overlay al 95% para legibilidad */}
+      {config.branding.heroImageUrl && (
+        <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
+          <img
+            src={config.branding.heroImageUrl}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: "var(--landing-bg)", opacity: 0.95 }}
+          />
+        </div>
+      )}
+
       {/* Cabecera con botón de volver (patrón de referencia) */}
-      <header className="border-b" style={{ borderColor: "var(--landing-surface)" }}>
+      <header className="relative z-10 border-b" style={{ borderColor: "var(--landing-surface)" }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <Link
             href={`/${slug}`}
@@ -79,7 +94,7 @@ export function ReservationPage({ slug }: { slug: string }) {
       </header>
 
       {/* Wizard con tokens shadcn mapeados a la paleta de la landing */}
-      <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-16 sm:px-6" style={WIZARD_TOKENS}>
+      <div className="relative z-10 mx-auto w-full max-w-3xl px-4 pt-4 pb-16 sm:px-6" style={WIZARD_TOKENS}>
         <BookingWizard slug={slug} shop={shop} />
       </div>
     </div>

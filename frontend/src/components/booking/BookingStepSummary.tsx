@@ -30,14 +30,15 @@ export function BookingStepSummaryContent({
   return (
     <>
       <div className="min-w-0">
-        <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        <span className="mt-0.5 block truncate font-medium text-foreground">{value}</span>
+        <span className="wiz-option-meta block">{label}</span>
+        <span className="wiz-option-title mt-0.5 block truncate">{value}</span>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        {meta && <span className="text-sm font-semibold text-primary">{meta}</span>}
-        <span className="text-xs text-muted-foreground transition-transform group-hover:-translate-x-0.5">
+        {meta && <span className="wiz-price text-sm font-semibold">{meta}</span>}
+        <span
+          className="text-xs transition-transform group-hover:-translate-x-0.5"
+          style={{ fontFamily: "var(--landing-font-mono)", color: "var(--landing-muted)" }}
+        >
           Editar
         </span>
       </div>
@@ -50,7 +51,7 @@ export function BookingStepSummary({ label, value, meta, onClick }: BookingStepS
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      className="group wiz-card flex w-full items-center justify-between gap-3 p-4 text-left"
     >
       <BookingStepSummaryContent label={label} value={value} meta={meta} />
     </button>

@@ -1,6 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { todayInShop, addDays } from "@/lib/timezone"
 import type { PublicSlot } from "@/types/public"
@@ -65,10 +64,9 @@ export function SelectDate({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-foreground mb-1">Fecha y hora</h2>
-      <p className="text-sm text-muted-foreground mb-5">
-        Elige el día y el horario disponible que prefieras.
-      </p>
+      <p className="wiz-step-kicker mb-2">Agenda</p>
+      <h2 className="wiz-step-title mb-1">Fecha y hora</h2>
+      <p className="wiz-step-sub mb-6">Elige el día y el horario disponible que prefieras.</p>
 
       <div className="grid grid-cols-7 gap-2">
         {days.map((day) => {
@@ -78,17 +76,10 @@ export function SelectDate({
               key={day.dateStr}
               type="button"
               onClick={() => onSelectDate(day.dateStr)}
-              className={cn(
-                "flex flex-col items-center rounded-lg border py-2.5 transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                selected
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40",
-              )}
+              className={cn("wiz-day", selected && "is-selected")}
             >
-              <span className="text-[10px] font-bold uppercase tracking-wider">
-                {day.dayName}
-              </span>
-              <span className="text-base font-semibold leading-tight">{day.dayNum}</span>
+              <span className="wiz-day-name">{day.dayName}</span>
+              <span className="wiz-day-num">{day.dayNum}</span>
             </button>
           )
         })}
@@ -96,23 +87,32 @@ export function SelectDate({
 
       {selectedDate ? (
         <div className="mt-6">
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Horarios disponibles
-          </h3>
+          <h3 className="wiz-group-label mb-3">Horarios disponibles</h3>
 
           {slotsLoading ? (
-            <div className="animate-pulse py-8 text-center text-xs text-muted-foreground">
+            <div
+              className="animate-pulse py-8 text-center text-xs"
+              style={{ fontFamily: "var(--landing-font-mono)", color: "var(--landing-muted)" }}
+            >
               Cargando horarios libres…
             </div>
           ) : slotsError ? (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/5 py-8 text-center text-xs text-destructive">
+            <div
+              className="border p-4 py-8 text-center text-xs"
+              style={{
+                borderColor: "color-mix(in srgb, var(--landing-danger) 40%, transparent)",
+                background: "color-mix(in srgb, var(--landing-danger) 7%, transparent)",
+                color: "var(--landing-danger)",
+                fontFamily: "var(--landing-font-mono)",
+              }}
+            >
               {slotsError}
             </div>
           ) : slots.length > 0 ? (
             <div className="space-y-6">
               {morning.length > 0 && (
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold text-muted-foreground">Mañana</h4>
+                  <h4 className="wiz-group-label mb-3">Mañana</h4>
                   <div className="grid grid-cols-4 gap-2">
                     {morning.map((slot) => (
                       <SlotButton
@@ -127,7 +127,7 @@ export function SelectDate({
               )}
               {afternoon.length > 0 && (
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold text-muted-foreground">Tarde</h4>
+                  <h4 className="wiz-group-label mb-3">Tarde</h4>
                   <div className="grid grid-cols-4 gap-2">
                     {afternoon.map((slot) => (
                       <SlotButton
@@ -142,24 +142,29 @@ export function SelectDate({
               )}
             </div>
           ) : (
-            <div className="rounded-xl border border-border bg-muted/40 py-8 text-center text-xs text-muted-foreground">
+            <div className="wiz-card wiz-step-sub p-4 py-8 text-center text-xs">
               Sin horarios disponibles para este día. Elige otra fecha.
             </div>
           )}
         </div>
       ) : (
-        <div className="mt-6 rounded-xl border border-border bg-muted/30 py-10 text-center text-xs text-muted-foreground">
+        <div className="wiz-card wiz-step-sub mt-6 p-4 py-10 text-center text-xs">
           Selecciona un día para ver las horas disponibles.
         </div>
       )}
 
       <div className="mt-6 flex gap-3">
-        <Button variant="outline" className="flex-1 py-3.5" onClick={onPrev}>
+        <button type="button" className="wiz-btn wiz-btn-secondary flex-1" onClick={onPrev}>
           Atrás
-        </Button>
-        <Button className="flex-1 py-3.5" disabled={!canProceed} onClick={onNext}>
+        </button>
+        <button
+          type="button"
+          className="wiz-btn wiz-btn-primary flex-1"
+          disabled={!canProceed}
+          onClick={onNext}
+        >
           Continuar
-        </Button>
+        </button>
       </div>
     </div>
   )
@@ -176,12 +181,7 @@ function SlotButton({
 }) {
   if (slot.past) {
     return (
-      <span
-        aria-disabled="true"
-        className={cn(
-          "cursor-not-allowed rounded-lg border border-border bg-muted/40 py-2.5 text-center text-xs font-medium text-muted-foreground/40 line-through opacity-60",
-        )}
-      >
+      <span aria-disabled="true" className="wiz-slot block">
         {slot.startTime}
       </span>
     )
@@ -191,12 +191,7 @@ function SlotButton({
       type="button"
       onClick={() => onSelect(slot.startTime)}
       aria-pressed={selected}
-      className={cn(
-        "rounded-lg border py-2.5 text-center text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        selected
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-card text-foreground hover:border-primary/50",
-      )}
+      className={cn("wiz-slot", selected && "is-selected")}
     >
       {slot.startTime}
     </button>

@@ -415,6 +415,333 @@
   to   { opacity: 0; transform: translateY(120px) scale(0.9); }
 }
 
+/* ── Wizard de reserva — identidad «dark luxury» (ADR-015/016) ──
+   Rediseño VISUAL del formulario de citas: tipografía editorial (display serif
+   + mono), hairlines doradas, esquinas rectas y acentos con moderación.
+   Solo clases de presentación: la lógica, flujo y animaciones del wizard
+   (landing-wizard-form/morph/exit) quedan intactas. */
+
+/* Kicker del paso: numeral mono dorado con tracking amplio (01 · SERVICIO). */
+.wiz-step-kicker {
+  font-family: var(--landing-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--landing-accent);
+}
+
+/* Título del paso: display serif en mayúsculas, escala contenida. */
+.wiz-step-title {
+  font-family: var(--landing-font-display);
+  font-size: 1.375rem;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--landing-fg);
+}
+
+/* Subtítulo del paso. */
+.wiz-step-sub {
+  font-family: var(--landing-font-body);
+  font-size: 0.875rem;
+  color: var(--landing-muted);
+}
+
+/* Card base del wizard: superficie oscura, hairline sutil y filo dorado
+   superior a 40% → pleno en hover/focus (mismo patrón que .landing-card).
+   Esquinas rectas: nada de redondeos tipo app genérica. */
+.wiz-card {
+  position: relative;
+  background: var(--landing-surface);
+  border: 1px solid color-mix(in srgb, var(--landing-fg) 14%, transparent);
+}
+.wiz-card::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 2px;
+  background: var(--landing-accent);
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.wiz-card:hover::before,
+.wiz-card:focus-within::before {
+  opacity: 1;
+}
+
+/* Opción seleccionable (servicio/barbero): fila con hairline, caret dorado
+   lateral que crece al seleccionar y borde dorado en hover/selección. */
+.wiz-option {
+  position: relative;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--landing-fg) 14%, transparent);
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+.wiz-option::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--landing-accent);
+  transition: height 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wiz-option:hover {
+  border-color: color-mix(in srgb, var(--landing-accent) 45%, transparent);
+}
+.wiz-option:focus-visible {
+  outline: none;
+  border-color: var(--landing-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--landing-accent) 45%, transparent);
+}
+.wiz-option.is-selected {
+  border-color: var(--landing-accent);
+  background: color-mix(in srgb, var(--landing-accent) 7%, transparent);
+}
+.wiz-option.is-selected::after {
+  height: 55%;
+}
+
+/* Nombre dentro de una opción: body font, peso medio. */
+.wiz-option-title {
+  font-family: var(--landing-font-body);
+  font-weight: 500;
+  color: var(--landing-fg);
+}
+
+/* Metadatos dentro de una opción (duración, rol): mono muted pequeño. */
+.wiz-option-meta {
+  font-family: var(--landing-font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--landing-muted);
+}
+
+/* Precio: mono dorado, tabular. */
+.wiz-price {
+  font-family: var(--landing-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--landing-accent);
+}
+
+/* Botones del wizard: primario dorado sólido; secundario hairline que se tiñe
+   de dorado en hover (patrón .landing-card-link). Mono en mayúsculas. */
+.wiz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.95rem 1.5rem;
+  font-family: var(--landing-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease,
+    opacity 0.25s ease;
+}
+.wiz-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.wiz-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--landing-accent) 45%, transparent);
+}
+.wiz-btn-primary {
+  background: var(--landing-accent);
+  color: var(--landing-bg);
+  border: 1px solid var(--landing-accent);
+}
+.wiz-btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--landing-accent) 85%, var(--landing-bg));
+}
+.wiz-btn-secondary {
+  background: transparent;
+  color: var(--landing-fg);
+  border: 1px solid color-mix(in srgb, var(--landing-fg) 28%, transparent);
+}
+.wiz-btn-secondary:hover:not(:disabled) {
+  border-color: var(--landing-accent);
+  color: var(--landing-accent);
+}
+
+/* Label de campo: mono pequeño en mayúsculas con tracking. */
+.wiz-label {
+  display: block;
+  font-family: var(--landing-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--landing-muted);
+}
+
+/* Input del wizard: fondo hundido sobre surface, hairline, foco dorado. */
+.wiz-input {
+  width: 100%;
+  background: color-mix(in srgb, var(--landing-bg) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--landing-fg) 20%, transparent);
+  color: var(--landing-fg);
+  padding: 0.75rem 1rem;
+  font-family: var(--landing-font-body);
+  font-size: 0.9375rem;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.wiz-input::placeholder {
+  color: color-mix(in srgb, var(--landing-muted) 65%, transparent);
+}
+.wiz-input:focus {
+  border-color: var(--landing-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--landing-accent) 40%, transparent);
+}
+
+/* Día del selector semanal: cuadrado sobrio; seleccionado se rellena de dorado. */
+.wiz-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.65rem 0;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--landing-fg) 14%, transparent);
+  color: var(--landing-muted);
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.wiz-day:hover {
+  border-color: color-mix(in srgb, var(--landing-accent) 45%, transparent);
+  color: var(--landing-fg);
+}
+.wiz-day:focus-visible {
+  outline: none;
+  border-color: var(--landing-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--landing-accent) 45%, transparent);
+}
+.wiz-day.is-selected {
+  background: var(--landing-accent);
+  border-color: var(--landing-accent);
+  color: var(--landing-bg);
+}
+.wiz-day-name {
+  font-family: var(--landing-font-mono);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.wiz-day-num {
+  font-family: var(--landing-font-display);
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+/* Slot de hora: compacto, mono; seleccionado se rellena de dorado. Pasado:
+   atenuado con tachado (sin interacción). */
+.wiz-slot {
+  padding: 0.65rem 0;
+  text-align: center;
+  font-family: var(--landing-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--landing-fg) 14%, transparent);
+  color: var(--landing-fg);
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.wiz-slot:hover {
+  border-color: color-mix(in srgb, var(--landing-accent) 55%, transparent);
+}
+.wiz-slot:focus-visible {
+  outline: none;
+  border-color: var(--landing-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--landing-accent) 45%, transparent);
+}
+.wiz-slot.is-selected {
+  background: var(--landing-accent);
+  border-color: var(--landing-accent);
+  color: var(--landing-bg);
+}
+.wiz-slot[aria-disabled="true"] {
+  color: color-mix(in srgb, var(--landing-muted) 40%, transparent);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+/* Encabezado de grupo (MAÑANA / TARDE): mono muted con hairline a la derecha. */
+.wiz-group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--landing-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--landing-muted);
+}
+.wiz-group-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--landing-fg) 12%, transparent);
+}
+
+/* Indicador de progreso: segmentos hairline; completados/activos en dorado. */
+.wiz-progress-segment {
+  height: 2px;
+  flex: 1;
+  background: color-mix(in srgb, var(--landing-fg) 15%, transparent);
+  transition: background-color 0.3s ease;
+}
+.wiz-progress-segment.is-done {
+  background: var(--landing-accent);
+}
+
+/* Resumen total del checkout: hairline superior dorada tenue. */
+.wiz-total-row {
+  border-top: 1px solid color-mix(in srgb, var(--landing-accent) 30%, transparent);
+}
+
+/* Chip de sucursal: mono compacto; seleccionada se rellena de dorado. */
+.wiz-chip {
+  padding: 0.45rem 1.1rem;
+  font-family: var(--landing-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--landing-fg) 18%, transparent);
+  color: var(--landing-muted);
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.wiz-chip:hover {
+  border-color: color-mix(in srgb, var(--landing-accent) 45%, transparent);
+  color: var(--landing-fg);
+}
+.wiz-chip:focus-visible {
+  outline: none;
+  border-color: var(--landing-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--landing-accent) 45%, transparent);
+}
+.wiz-chip.is-selected {
+  background: var(--landing-accent);
+  border-color: var(--landing-accent);
+  color: var(--landing-bg);
+}
+
 /* ── Landing editorial (ADR-016) ──
    Composición editorial de la landing `/[slug]`: escalas clamp(), eyebrows,
    índices mono, hairlines y listas numeradas en sustitución de las cajas

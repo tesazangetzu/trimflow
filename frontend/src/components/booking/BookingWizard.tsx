@@ -344,21 +344,40 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
-      <header className="mb-6 text-center">
+      <header className="mb-8 text-center">
         {resolvedShop.landing?.branding?.logoUrl ? (
           <img
             src={resolvedShop.landing.branding.logoUrl}
             alt={`Logo de ${resolvedShop.name}`}
-            className="mx-auto mb-3 h-14 w-auto max-w-[180px] object-contain"
+            className="mx-auto mb-4 h-14 w-auto max-w-[180px] object-contain"
           />
         ) : (
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-3xl ring-1 ring-primary/30">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-3xl ring-1 ring-primary/30">
             💈
           </div>
         )}
-        <h1 className="text-2xl font-bold text-foreground">{resolvedShop.name}</h1>
+        <p className="landing-eyebrow mb-2">Reserva tu cita</p>
+        <h1
+          className="text-2xl uppercase"
+          style={{
+            fontFamily: "var(--landing-font-display)",
+            letterSpacing: "0.04em",
+            color: "var(--landing-fg)",
+          }}
+        >
+          {resolvedShop.name}
+        </h1>
         {activeBranch?.address && (
-          <p className="mt-1 text-sm text-muted-foreground">{activeBranch.address}</p>
+          <p
+            className="mt-2 text-xs"
+            style={{
+              fontFamily: "var(--landing-font-mono)",
+              letterSpacing: "0.08em",
+              color: "var(--landing-muted)",
+            }}
+          >
+            {activeBranch.address}
+          </p>
         )}
       </header>
 
@@ -369,12 +388,7 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
               key={branch.id}
               type="button"
               onClick={() => setActiveBranchId(branch.id)}
-              className={cn(
-                "rounded-full border px-4 py-1.5 text-sm font-medium transition-all",
-                activeBranch?.id === branch.id
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40",
-              )}
+              className={cn("wiz-chip", activeBranch?.id === branch.id && "is-selected")}
             >
               {branch.name}
             </button>
@@ -386,22 +400,24 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
         <div className="mb-6">
           <div className="flex items-center justify-between">
             {STEP_LABELS[booking.step] && (
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {STEP_LABELS[booking.step]}
-              </span>
+              <span className="wiz-step-kicker">{STEP_LABELS[booking.step]}</span>
             )}
-            <span className="text-xs text-muted-foreground">
-              Paso {stepIndex + 1} de 5
+            <span
+              className="text-xs"
+              style={{
+                fontFamily: "var(--landing-font-mono)",
+                letterSpacing: "0.12em",
+                color: "var(--landing-muted)",
+              }}
+            >
+              Paso {stepIndex + 1} / 5
             </span>
           </div>
-          <div className="mt-2 flex gap-1.5">
+          <div className="mt-3 flex gap-1.5">
             {["service", "barber", "date", "checkout", "success"].map((s, i) => (
               <div
                 key={s}
-                className={cn(
-                  "h-1.5 flex-1 rounded-full transition-colors",
-                  i <= stepIndex ? "bg-primary" : "bg-muted",
-                )}
+                className={cn("wiz-progress-segment", i <= stepIndex && "is-done")}
               />
             ))}
           </div>
@@ -409,7 +425,7 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
       )}
 
       {booking.step === "success" ? (
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="wiz-card p-6">
           {booking.appointment && (
             <Success
               appointment={booking.appointment}
@@ -437,7 +453,7 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
             <div
               aria-hidden
               className={cn(
-                "landing-wizard-morph rounded-2xl bg-card shadow-sm overflow-hidden",
+                "landing-wizard-morph wiz-card overflow-hidden",
                 morph?.shrinking && "is-shrinking",
               )}
               style={
@@ -446,15 +462,12 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
                   : undefined
               }
             >
-              <div
-                ref={formRef}
-                className="landing-wizard-morph__form rounded-2xl border border-border p-6"
-              >
+              <div ref={formRef} className="landing-wizard-morph__form p-6">
                 {renderStepContent(leavingStep as BookingStep)}
               </div>
               <div
                 ref={summaryRef}
-                className="landing-wizard-morph__summary flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-left"
+                className="landing-wizard-morph__summary flex w-full items-center justify-between gap-3 p-4 text-left"
               >
                 {leavingSummary ? (
                   <BookingStepSummaryContent {...leavingSummary} />
@@ -466,10 +479,7 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
           )}
 
           {leavingStep && leavingMode === "exit" && (
-            <div
-              aria-hidden
-              className="landing-wizard-form-exit rounded-2xl border border-border bg-card p-4 shadow-sm"
-            >
+            <div aria-hidden className="landing-wizard-form-exit wiz-card p-4">
               {leavingSummary ? (
                 <BookingStepSummaryContent {...leavingSummary} />
               ) : (
@@ -481,7 +491,7 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
           <div
             key={booking.step}
             className={cn(
-              "landing-wizard-form rounded-2xl border border-border bg-card p-6 shadow-sm",
+              "landing-wizard-form wiz-card p-6",
               isStepTransition && "landing-wizard-form--delayed",
             )}
           >

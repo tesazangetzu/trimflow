@@ -345,9 +345,17 @@ export function BookingWizard({ slug, shop: shopProp }: { slug: string; shop?: P
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
       <header className="mb-6 text-center">
-        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-3xl ring-1 ring-primary/30">
-          💈
-        </div>
+        {resolvedShop.landing?.branding?.logoUrl ? (
+          <img
+            src={resolvedShop.landing.branding.logoUrl}
+            alt={`Logo de ${resolvedShop.name}`}
+            className="mx-auto mb-3 h-14 w-auto max-w-[180px] object-contain"
+          />
+        ) : (
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-3xl ring-1 ring-primary/30">
+            💈
+          </div>
+        )}
         <h1 className="text-2xl font-bold text-foreground">{resolvedShop.name}</h1>
         {activeBranch?.address && (
           <p className="mt-1 text-sm text-muted-foreground">{activeBranch.address}</p>

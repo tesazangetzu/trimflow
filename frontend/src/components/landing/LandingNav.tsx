@@ -18,9 +18,10 @@ const NAV_LINKS = [
 interface LandingNavProps {
   slug: string
   shopName: string
+  logoUrl?: string | null
 }
 
-export function LandingNav({ slug, shopName }: LandingNavProps) {
+export function LandingNav({ slug, shopName, logoUrl }: LandingNavProps) {
   const active = useActiveSection(NAV_LINKS.map((link) => link.id))
   const [progress, setProgress] = useState(0)
   const [scrolled, setScrolled] = useState(false)
@@ -68,7 +69,15 @@ export function LandingNav({ slug, shopName }: LandingNavProps) {
       />
       <div className="mx-auto flex h-12 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href={`/${slug}`} className="group flex items-center gap-2.5" onClick={handleLogoClick}>
-          <span className="landing-pole block h-5 w-1.5" aria-hidden />
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={`Logo de ${shopName}`}
+              className="h-7 w-auto max-w-[140px] object-contain"
+            />
+          ) : (
+            <span className="landing-pole block h-5 w-1.5" aria-hidden />
+          )}
           <span
             className="text-xs font-semibold uppercase tracking-[0.2em]"
             style={{ color: "var(--landing-fg)", fontFamily: "var(--landing-font-mono)" }}

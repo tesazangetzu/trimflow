@@ -38,7 +38,7 @@ export function LandingPage({ slug }: { slug: string }) {
       className="landing-page min-h-screen"
       style={{ ...landingThemeVars(config), background: "var(--landing-bg)" }}
     >
-      <LandingNav slug={slug} shopName={shop.name} />
+      <LandingNav slug={slug} shopName={shop.name} logoUrl={config.branding.logoUrl} />
 
       <LandingHero
         slug={slug}

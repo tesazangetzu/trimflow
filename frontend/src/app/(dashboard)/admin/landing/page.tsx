@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToastManager } from "@/components/ui/toast"
+import { ImageDropzone } from "@/components/admin/image-dropzone"
 import * as landingService from "@/services/landing.service"
 import { IMAGE_GUIDES, LANDING_DEFAULTS, type LandingConfig } from "@/types/landing"
 
@@ -227,49 +228,24 @@ export default function LandingPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="logoUrl">URL del logo</Label>
-              <Input
-                id="logoUrl"
-                value={config.branding.logoUrl ?? ""}
-                onChange={(e) => patchBranding("logoUrl", e.target.value || null)}
-                placeholder="https://... (opcional)"
+              <Label>Logo</Label>
+              <ImageDropzone
+                target="logo"
+                value={config.branding.logoUrl}
+                onChange={(url) => patchBranding("logoUrl", url)}
+                guide={IMAGE_GUIDES.logo}
+                previewClassName="h-12 w-12 rounded object-contain"
               />
-              <p className="text-xs text-muted-foreground">Proporción: {IMAGE_GUIDES.logo}</p>
-              {config.branding.logoUrl && (
-                <div className="mt-2 inline-flex items-center gap-2 rounded-md border p-2">
-                  <img
-                    src={config.branding.logoUrl}
-                    alt="Vista previa del logo"
-                    className="h-12 w-12 rounded object-contain"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.opacity = "0.2"
-                    }}
-                  />
-                  <span className="text-xs text-muted-foreground">Vista previa</span>
-                </div>
-              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="heroImageUrl">URL de la imagen del hero</Label>
-              <Input
-                id="heroImageUrl"
-                value={config.branding.heroImageUrl ?? ""}
-                onChange={(e) => patchBranding("heroImageUrl", e.target.value || null)}
-                placeholder="https://... (opcional)"
+              <Label>Imagen del hero</Label>
+              <ImageDropzone
+                target="hero"
+                value={config.branding.heroImageUrl}
+                onChange={(url) => patchBranding("heroImageUrl", url)}
+                guide={IMAGE_GUIDES.hero}
+                previewClassName="h-24 w-full rounded object-cover"
               />
-              <p className="text-xs text-muted-foreground">Proporción: {IMAGE_GUIDES.hero}</p>
-              {config.branding.heroImageUrl && (
-                <div className="mt-2 overflow-hidden rounded-md border">
-                  <img
-                    src={config.branding.heroImageUrl}
-                    alt="Vista previa del hero"
-                    className="aspect-video w-full object-cover"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.opacity = "0.2"
-                    }}
-                  />
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>

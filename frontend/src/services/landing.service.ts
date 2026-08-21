@@ -15,3 +15,21 @@ export async function updateConfig(dto: Partial<LandingConfig>): Promise<Landing
   const { data } = await api.put("/landing", dto)
   return data
 }
+
+export interface BrandingUploadResponse {
+  url: string
+  key: string
+  config: LandingConfig
+}
+
+export async function uploadBrandingImage(
+  target: "logo" | "hero",
+  file: File,
+): Promise<BrandingUploadResponse> {
+  const formData = new FormData()
+  formData.append("file", file)
+  const { data } = await api.post(`/landing/branding/upload?target=${target}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  })
+  return data
+}

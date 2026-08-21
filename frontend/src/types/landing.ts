@@ -89,6 +89,6 @@ export const LANDING_DEFAULTS: LandingConfig = {
 
 /** Proporciones recomendadas para cada imagen (se muestran en el panel admin). */
 export const IMAGE_GUIDES = {
-  logo: "Cuadrado 1:1 · máx 512×512px · PNG/SVG con fondo transparente",
+  logo: "Cuadrado 1:1 · máx 512×512px · PNG/JPG/WebP",
   hero: "Panorámico 16:9 · máx 1920×1080px · JPG/WebP",
 } as const

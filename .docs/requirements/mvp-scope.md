@@ -162,7 +162,7 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 
 ### Gestión por sucursal en el panel admin
 
-- [ ] **Servicios por sucursal**: en el panel admin, gestionar los servicios dentro de una sucursal seleccionada (el modelo ya tiene `Service.branchId`; falta la UX de gestión por sucursal).
+- [x] **Servicios por sucursal**: en el panel admin, gestionar los servicios dentro de una sucursal seleccionada ✅ COMPLETADO (2026-08-22, selector `BranchFilterSelect` + filtro en `/admin/services`, ver `reports/FINAL_2026-08-22_servicios-por-sucursal.md`).
 - [ ] **Horarios por sucursal**: gestionar los horarios/bloques de trabajo por sucursal (hoy `Schedule`/`AvailabilityBlock` cuelgan de `barberId`; el barber ya tiene `branchId`).
 - [ ] **Clientes por sucursal**: gestionar los clientes por sucursal (el modelo ya tiene `Customer.branchId`; falta la UX de gestión por sucursal).
 - [ ] **Barberos por sucursal**: gestionar los barberos por sucursal (el modelo ya tiene `Barber.branchId`; falta la UX de gestión por sucursal).

@@ -167,13 +167,11 @@ El MVP debe ser **funcional, estable y value-focused**. Solo incluye lo mínimo 
 - [ ] **Clientes por sucursal**: gestionar los clientes por sucursal (el modelo ya tiene `Customer.branchId`; falta la UX de gestión por sucursal).
 - [ ] **Barberos por sucursal**: gestionar los barberos por sucursal (el modelo ya tiene `Barber.branchId`; falta la UX de gestión por sucursal).
 
-### Upload de imágenes en el panel admin landing (frontend)
+### Upload de imágenes en el panel admin landing (frontend) — ✅ COMPLETADO (2026-08-21, commit `407821a`)
 
-> El backend de imágenes con R2 se implementa primero (módulo + servicio + multer + env). El frontend se conecta en una iteración posterior.
-
-- [ ] Reemplazar el input de URL del card "Marca e imágenes" (`/admin/landing`) por un **uploader** que suba la imagen al endpoint de R2 y guarde la ruta devuelta en `branding.logoUrl` / `branding.heroImageUrl`.
-- [ ] Validar en el cliente los tipos de archivo (png, jpg, webp) y las proporciones antes de subir.
-- [ ] Mostrar vista previa de la imagen subida y permitir reemplazarla/eliminarla.
+- [x] Reemplazado el input de URL del card "Marca e imágenes" (`/admin/landing`) por un **dropzone** (`ImageDropzone`) que sube la imagen al endpoint R2 (`POST /landing/branding/upload?target=`) y guarda la ruta devuelta en `branding.logoUrl` / `branding.heroImageUrl`.
+- [x] Validación en el cliente de tipos de archivo (png, jpg, webp) y proporciones antes de subir.
+- [x] Vista previa de la imagen subida con opción de reemplazo/eliminación.
 
 ---
 

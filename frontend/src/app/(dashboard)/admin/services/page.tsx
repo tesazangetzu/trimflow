@@ -28,26 +28,65 @@ import {
 } from "@/components/ui/dialog"
 import { SkeletonTable } from "@/components/ui/skeleton-patterns"
 import { ServiceFormDialog } from "@/components/services/service-form-dialog"
+import { BranchFilterSelect } from "@/components/branches/branch-filter-select"
 import { formatCurrency } from "@/components/dashboard/chart-tools"
 import { useToastManager } from "@/components/ui/toast"
 import * as servicesService from "@/services/service-offering.service"
+import * as branchesService from "@/services/branches.service"
+import type { Branch } from "@/types/branch"
 import type { Service } from "@/types/service"
 
 export default function ServicesPage() {
   const { add } = useToastManager()
   const [services, setServices] = useState<Service[]>([])
-  const [loading, setLoading] = useState(true)
+  const [branches, setBranches] = useState<Branch[]>([])
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Service | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Service | null>(null)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
-    servicesService
+    let active = true
+    branchesService
       .getAll()
-      .then(setServices)
-      .finally(() => setLoading(false))
+      .then((data) => {
+        if (active) setBranches(data)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
   }, [])
+
+  const [loadedFilter, setLoadedFilter] = useState<string | null | undefined>(
+    undefined
+  )
+  const loading =
+    loadedFilter === undefined || loadedFilter !== selectedBranchId
+
+  useEffect(() => {
+    let active = true
+    servicesService
+      .getAll(selectedBranchId ?? undefined)
+      .then((data) => {
+        if (!active) return
+        setServices(data)
+        setLoadedFilter(selectedBranchId)
+      })
+      .catch(() => {
+        if (!active) return
+        setServices([])
+        setLoadedFilter(selectedBranchId)
+      })
+    return () => {
+      active = false
+    }
+  }, [selectedBranchId])
+
+  const refetchWithFilter = () => {
+    servicesService.getAll(selectedBranchId ?? undefined).then(setServices)
+  }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
@@ -92,6 +131,14 @@ export default function ServicesPage() {
           <Plus className="size-4" />
           Nuevo Servicio
         </Button>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <BranchFilterSelect
+          branches={branches}
+          value={selectedBranchId}
+          onChange={setSelectedBranchId}
+        />
       </div>
 
       {loading ? (
@@ -190,7 +237,8 @@ export default function ServicesPage() {
           if (!o) setEditing(null)
         }}
         entity={editing}
-        onCreated={(c) => setServices((prev) => [c, ...prev])}
+        defaultBranchId={selectedBranchId ?? undefined}
+        onCreated={() => refetchWithFilter()}
         onSaved={(u) =>
           setServices((prev) => prev.map((i) => (i.id === u.id ? u : i)))
         }

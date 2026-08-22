@@ -1,9 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -14,6 +21,8 @@ import {
 } from "@/components/ui/dialog"
 import { useToastManager } from "@/components/ui/toast"
 import * as servicesService from "@/services/service-offering.service"
+import * as branchesService from "@/services/branches.service"
+import type { Branch } from "@/types/branch"
 import type { Service } from "@/types/service"
 
 interface ServiceFormDialogProps {
@@ -21,6 +30,7 @@ interface ServiceFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   entity?: Service | null
+  defaultBranchId?: string
   onCreated?: (created: Service) => void
   onSaved?: (updated: Service) => void
 }
@@ -28,12 +38,14 @@ interface ServiceFormDialogProps {
 function ServiceFormContent({
   mode,
   entity,
+  defaultBranchId,
   onOpenChange,
   onCreated,
   onSaved,
 }: {
   mode: "create" | "edit"
   entity: Service | null
+  defaultBranchId?: string
   onOpenChange: (open: boolean) => void
   onCreated: (created: Service) => void
   onSaved: (updated: Service) => void
@@ -45,14 +57,38 @@ function ServiceFormContent({
     entity ? String(entity.durationMinutes) : ""
   )
   const [description, setDescription] = useState(entity?.description ?? "")
+  const [branchId, setBranchId] = useState(
+    entity?.branchId ?? defaultBranchId ?? ""
+  )
+  const [branches, setBranches] = useState<Branch[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const isCreate = mode === "create"
   const prefix = isCreate ? "create" : "edit"
 
+  useEffect(() => {
+    if (!isCreate) return
+    let active = true
+    branchesService
+      .getAll()
+      .then((data) => {
+        if (active) setBranches(data)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [isCreate])
+
+  const branchItems = branches.map((b) => ({ value: b.id, label: b.name }))
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isCreate && !branchId) {
+      setError("Seleccioná una sucursal")
+      return
+    }
     setLoading(true)
     setError(null)
     try {
@@ -63,7 +99,7 @@ function ServiceFormContent({
         description: description || undefined,
       }
       if (isCreate) {
-        const created = await servicesService.create({ ...dto, branchId: "" })
+        const created = await servicesService.create({ ...dto, branchId })
         onCreated(created)
         add({
           title: "Servicio creado",
@@ -96,6 +132,27 @@ function ServiceFormContent({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {isCreate && (
+        <div className="space-y-2">
+          <Label htmlFor={`${prefix}-branch`}>Sucursal</Label>
+          <Select
+            items={branchItems}
+            value={branchId === "" ? null : branchId}
+            onValueChange={(v) => setBranchId(v == null ? "" : String(v))}
+          >
+            <SelectTrigger id={`${prefix}-branch`} className="w-full">
+              <SelectValue placeholder="Selecciona una sucursal..." />
+            </SelectTrigger>
+            <SelectContent>
+              {branches.map((branch) => (
+                <SelectItem key={branch.id} value={branch.id}>
+                  {branch.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor={`${prefix}-name`}>Nombre</Label>
         <Input
@@ -165,6 +222,7 @@ export function ServiceFormDialog({
   open,
   onOpenChange,
   entity,
+  defaultBranchId,
   onCreated,
   onSaved,
 }: ServiceFormDialogProps) {
@@ -188,6 +246,7 @@ export function ServiceFormDialog({
           <ServiceFormContent
             mode={mode}
             entity={entity ?? null}
+            defaultBranchId={defaultBranchId}
             onOpenChange={onOpenChange}
             onCreated={onCreated ?? (() => {})}
             onSaved={onSaved ?? (() => {})}
